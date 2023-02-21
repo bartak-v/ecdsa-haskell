@@ -17,8 +17,8 @@ For usage, call the program with the '--help' flag.
 -}
 module Main where
 
-import System.Environment (getArgs)
 import qualified ECDSA
+import System.Environment (getArgs)
 
 help :: String
 help =
@@ -37,7 +37,6 @@ help =
 \     -v ... Verify: Load the EC info from <FILE> containing public key, message and signature (r,s)\n\
 \                    and print 'True' or 'False' to STDOUT if the signature is correct or not respectively.\n"
 
-
 {-|
   The main function is branching the program based on the number of 
   command line arguments. 
@@ -45,9 +44,8 @@ help =
 main :: IO ()
 main = do
   args <- getArgs
-  case args
+  case args of
     -- | One flag argument and STDIN
-        of
     [arg] -> do
       content <- getContents
       runAction arg content

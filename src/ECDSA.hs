@@ -9,16 +9,22 @@
 This is the ECDSA module in which the Data representation for the Elliptic Curve 
 and helper functions are specified.
 -}
-
 module ECDSA where
 
-data Curve = Curve {}
-data Point = Point {
-  x :: Integer,
-  y :: Integer
-} deriving (Show)
+data Curve =
+  Curve
+    {
+    }
+
+data Point =
+  Point
+    { x :: Integer
+    , y :: Integer
+    }
+  deriving (Show)
 
 type Hash = Integer
 
 type PrivateKey = Integer
+
 type PublicKey = Integer
