@@ -7,10 +7,10 @@
   Year        : 2023
 
 This is the ECDSA module in which the Data representation for the Elliptic Curve 
-and helper functions are specified. 
+and the core computing functions are specified, aswell as helper functions. 
 
 The module is fully utilizing the "infinite" Integer type for representing parts
-of the ECDSA standard and make calculations.
+of the ECDSA standard and making calculations.
 -}
 module ECDSA where
 
@@ -49,7 +49,11 @@ data Point =
 type Hash = Integer
 
 -- | The signature
-type Signature = Integer
+data Signature =
+  Signature
+    { r :: Integer
+    , s :: Integer
+    }
 
 -- | The signing private key 'd'
 type PrivateKey = Integer
