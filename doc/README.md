@@ -1,4 +1,31 @@
 # ecdsa-haskell
-ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT
+ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 2023.
 
 The project was implemented in Haskell using GHC 9.2.5.
+
+
+
+## Input format
+The format of the input file adhering to the ECDSA standard is as such:
+
+Curve {
+p: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+a: 0
+b: 7
+g: Point {
+x: 0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+y: 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8
+}
+n: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+h: 1
+}
+<-- ADD Key SECTION IF YOU ARE CALLING THE -s / Sign option -->
+Key {
+d: 0xc9dcda39c4d7ab9d854484dbed2963da9c0cf3c6e9333528b4422ef00dd0b28e
+Q: 0x040e411e56210f20bf5172cbefab02135421b1eb58f6918d28c1b848be5eee42...
+}
+<-- OR ADD Signature IF YOU ARE CALLING THE -v / Verify option -->
+Signature {
+r: 0xb21ff64650be40610ba9324bc6bd273eafa87ac1bbc075be425c0f422f53196f
+s: 0x3b4d090468eddbea8a53c565d19a24c56377786c49a7f114459c43bc7d59615a
+}
