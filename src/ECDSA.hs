@@ -14,29 +14,28 @@ of the ECDSA standard and make calculations.
 -}
 module ECDSA where
 
-
-import Text.Parsec
-import Text.Parsec.ByteString
-import Numeric(showHex)
-import Data.ByteString (ByteString, stripPrefix)
-import Data.List (isPrefixOf)
 import Data.Char (toUpper)
-
+import Data.List (isPrefixOf)
+import Numeric (showHex)
 
 -- | Mode of operation of the ECDSA
-data Mode = Information | GenerateKeys | Sign | Verify
+data Mode
+  = Information
+  | GenerateKeys
+  | Sign
+  | Verify
 
 -- | The Elliptical Curve representation
 data Curve =
   Curve
-    { p :: Integer,
-      a :: Integer,
-      b :: Integer,
-      g :: Point,
-      n :: Integer,
-      h :: Integer
-    } 
-    deriving (Show)
+    { p :: Integer
+    , a :: Integer
+    , b :: Integer
+    , g :: Point
+    , n :: Integer
+    , h :: Integer
+    }
+  deriving (Show)
 
 -- | The Representation of the Point on the Curve
 data Point =
@@ -58,9 +57,8 @@ type PrivateKey = Integer
 -- | The verifying public key 'Q'
 type PublicKey = Integer
 
-
 processMode :: Mode -> [Char] -> IO ()
-processMode mode content = 
+processMode mode content =
   case mode of
     Information -> putStrLn $ "Information Mode\n" ++ content
     GenerateKeys -> putStrLn $ "Key Generation Mode\n" ++ content
@@ -72,11 +70,12 @@ This function takes String representing hexadecimal number such as "0xFFAB"
 or "FFAB" and converts it to Integer to be further used.
 -}
 integerFromHexString :: String -> Integer
-integerFromHexString hexString = if "0x" `isPrefixOf` hexString
-                then read hexString
-                else read ("0x" ++ hexString)
--- TODO testing: print $ ECDSA.Point (ECDSA.integerFromHexString ("0xFFB"::String)) (ECDSA.integerFromHexString ("FFB"::String))
+integerFromHexString hexString =
+  if "0x" `isPrefixOf` hexString
+    then read hexString
+    else read ("0x" ++ hexString)
 
+-- TODO testing: print $ ECDSA.Point (ECDSA.integerFromHexString ("0xFFB"::String)) (ECDSA.integerFromHexString ("FFB"::String))
 -- | Inverse function to the integerFromHexString
 integerToHexString :: Integer -> String
-integerToHexString n = "0x" ++ map toUpper ( showHex n "")
+integerToHexString num = "0x" ++ map toUpper (showHex num "")
