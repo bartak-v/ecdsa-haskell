@@ -14,4 +14,4 @@ test:
 	echo "test"
 
 pack:
-	zip $(XLOGINXX).zip LICENSE Makefile README.md *.hs
+	zip flp-fun-$(XLOGINXX).zip Makefile LICENSE src/* test/* doc/*
