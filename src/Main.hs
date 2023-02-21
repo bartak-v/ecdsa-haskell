@@ -8,19 +8,15 @@
   Portability : POSIX
 
 This is the Main module in which the decision making based upon command line arguments is programmed.
-
 -}
-
 -- Project: ECDSA in Haskell
 -- Author:  Bc. Vít Barták 
 -- Login:   xbarta47
 -- Year:    2023
-
 module Main where
 
-import System.IO ( IOMode(ReadMode), openFile , hGetContents)
 import System.Environment (getArgs)
-
+import System.IO (IOMode(ReadMode), hGetContents, openFile)
 
 {-|
   The main function is branching the program based on the number of 
@@ -29,21 +25,18 @@ import System.Environment (getArgs)
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
+  case args
     -- | One flag argument and STDIN
+        of
     [arg] -> do
       content <- getContents
       runAction arg content
-
-
     -- | One flag argument and file
     [arg, file] -> do
       content <- readFile file
       runAction arg content
-
     -- | Zero, three or more arguments
-    _ ->
-      putStrLn "Usage: ./flp22-fun [-i | -k | -s | -v] <file>"
+    _ -> putStrLn "Usage: ./flp22-fun [-i | -k | -s | -v] <file>"
 
 {-|
   The 'runAction' function calls appropriate ECDSA mode 
@@ -52,10 +45,10 @@ main = do
 -}
 runAction :: String -> String -> IO ()
 runAction "" "" = putStrLn "No argument or content specified"
-runAction choice content =       
+runAction choice content =
   case choice of
-        "-i" -> putStrLn $ "i" ++ content
-        "-k" -> putStrLn $ "i" ++ content
-        "-s" -> putStrLn $ "i" ++ content
-        "-v" -> putStrLn $ "i" ++ content
-        _ -> putStrLn "no arg"
+    "-i" -> putStrLn $ "i" ++ content
+    "-k" -> putStrLn $ "i" ++ content
+    "-s" -> putStrLn $ "i" ++ content
+    "-v" -> putStrLn $ "i" ++ content
+    _ -> putStrLn "no arg"
