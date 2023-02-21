@@ -4,15 +4,10 @@
   Author:     : Bc. Vít Barták (xbarta47)
   License     : MIT
   Maintainer  : xbarta47@fit.vutbr.cz
-  Stability   : experimental
-  Portability : POSIX
+  Year        : 2023
 
-This is the Main module in which the decision making based upon command line arguments is programmed.
+This is the Main module of the ECDSA in Haskell program in which the decision making based upon command line arguments are parsed.
 -}
--- Project: ECDSA in Haskell
--- Author:  Bc. Vít Barták 
--- Login:   xbarta47
--- Year:    2023
 module Main where
 
 import System.Environment (getArgs)
@@ -25,9 +20,8 @@ import System.IO (IOMode(ReadMode), hGetContents, openFile)
 main :: IO ()
 main = do
   args <- getArgs
-  case args
+  case args of
     -- | One flag argument and STDIN
-        of
     [arg] -> do
       content <- getContents
       runAction arg content
