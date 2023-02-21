@@ -62,12 +62,12 @@ main = do
   It takes two arguments 'choice' and 'content' of type 'String'.
 -}
 runAction :: String -> String -> IO ()
-runAction "" "" = putStrLn "No argument or content specified"
+runAction "" "" = putStrLn "No argument or content specified."
 runAction choice content =
   case choice of
-    "-i" -> print (ECDSA.Point 1 2)
-    "-k" -> putStrLn $ "i" ++ content
-    "-s" -> putStrLn $ "i" ++ content
-    "-v" -> putStrLn $ "i" ++ content
+    "-i" -> ECDSA.processMode ECDSA.Information content
+    "-k" -> ECDSA.processMode ECDSA.GenerateKeys content
+    "-s" -> ECDSA.processMode ECDSA.Sign content
+    "-v" -> ECDSA.processMode ECDSA.Verify content
     "--help" -> putStr help
     _ -> putStrLn "Bad argument provided, use '--help' for more information."
