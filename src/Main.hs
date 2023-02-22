@@ -46,15 +46,15 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    -- | One flag argument and STDIN
+    -- One flag argument and STDIN
     [arg] -> do
       content <- getContents
       processAction arg content
-    -- | One flag argument and input text file
+    -- One flag argument and input text file
     [arg, file] -> do
       content <- readFile file
       processAction arg content
-    -- | Zero, three or more arguments
+    -- Zero, three or more arguments
     _ -> putStrLn "Usage: ./flp22-fun [-i | -k | -s | -v | --help] <file>"
 
 {-|

@@ -43,7 +43,7 @@ n: 0xF...
 h: 0xF...
 ```
 
-The semantics and names of the ECDSA parameters (e.g. "c: ...") must be preserved. The parser is (as of now) case sensitive ("c:" =/= "C:")!. The parser does not care about the order of the parameters, but each parameter must be on it's own line. The parameters must be unique in the input. You can put random comments in the input files if they do not contain any of the keywords.
+The semantics and names of the ECDSA parameters (e.g. "c: ...") must be preserved. The parser is (as of now) case sensitive ("c:" =/= "C:")!. The parser does not care about the order of the parameters, but each parameter must be on it's own line. The parameters must be unique in the input. You can put random comments in the input files if they do not contain any of the keywords - anything else (if the other rules are fulfilled) is a comment.
 
 The list of reserved keywords is:
 
@@ -51,6 +51,6 @@ The list of reserved keywords is:
   ["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]
 ```
 
-You can use these keywords only once in the input file.
+You can use these keywords only once in the input file / stream!
 
-See `test/` directory for working examples and examples of "misformatted" inputs that the parser understands correctly.
+See `test/` directory for working examples and examples of "misformatted" inputs that the parser understands correctly. If no input file is specified, the program reads STDIN.
