@@ -17,10 +17,7 @@ For usage, call the program with the '--help' flag.
 -}
 module Main where
 
-import qualified ECDSA (
-  Mode (..),
-  processMode
-  )
+import qualified ECDSA (Mode(..), processMode)
 
 import System.Environment (getArgs)
 
@@ -52,11 +49,11 @@ main = do
     -- | One flag argument and STDIN
     [arg] -> do
       content <- getContents
-      runAction arg content
+      processAction arg content
     -- | One flag argument and input text file
     [arg, file] -> do
       content <- readFile file
-      runAction arg content
+      processAction arg content
     -- | Zero, three or more arguments
     _ -> putStrLn "Usage: ./flp22-fun [-i | -k | -s | -v | --help] <file>"
 
@@ -65,9 +62,9 @@ main = do
   based on command line flag argument.
   It takes two arguments 'choice' and 'content' of type 'String'.
 -}
-runAction :: String -> String -> IO ()
-runAction "" "" = putStrLn "No argument or content specified."
-runAction choice content =
+processAction :: String -> String -> IO ()
+processAction "" "" = putStrLn "No argument or content specified."
+processAction choice content =
   case choice of
     "-i" -> ECDSA.processMode ECDSA.Information content
     "-k" -> ECDSA.processMode ECDSA.GenerateKeys content

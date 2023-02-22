@@ -12,18 +12,30 @@ and the core computing functions are specified, aswell as helper functions.
 The module is fully utilizing the "infinite" Integer type for representing parts
 of the ECDSA standard and making calculations.
 -}
+{-# LANGUAGE RecordWildCards #-}
+
 module ECDSA where
 
 import Data.Char (toUpper)
-import Data.List (isPrefixOf,isInfixOf)
+import Data.List (isInfixOf, isPrefixOf)
 import Numeric (showHex)
 
+{-- TYPES SECTION --}
 -- | Mode of operation of the ECDSA
 data Mode
   = Information
   | GenerateKeys
   | Sign
   | Verify
+
+data ECDSA =
+  ECDSA
+    { curve :: Curve
+    , pk :: PrivateKey
+    , pubk :: PublicKey
+    , hash :: Hash
+    , signature :: Signature
+    }
 
 -- | The Elliptical Curve representation
 data Curve =
@@ -37,15 +49,29 @@ data Curve =
     , n :: Integer
     , h :: Integer
     }
-  deriving (Show)
 
--- | The Representation of the Point on the Curve
-{-data Point =
-  Point
-    { x :: Integer
-    , y :: Integer
-    }
-  deriving (Show) -}
+instance Show Curve where
+  show Curve {..} =
+    "Curve {\n" ++
+    "p: " ++
+    integerToHexString p ++
+    "\n" ++
+    "a: " ++
+    show a ++
+    "\n" ++
+    "b: " ++
+    show b ++
+    "\n" ++
+    "g: Point {" ++
+    "\n" ++
+    "x: " ++
+    integerToHexString x ++
+    "\n" ++
+    "y: " ++
+    integerToHexString y ++
+    "\n" ++
+    "}\n" ++
+    "n: " ++ integerToHexString n ++ "\n" ++ "h: " ++ show h ++ "\n" ++ "}"
 
 -- | The hash of the message to be signed
 type Hash = Integer
@@ -63,24 +89,42 @@ type PrivateKey = Integer
 -- | The verifying public key 'Q'
 type PublicKey = Integer
 
--- TODO remake this to be case insensitive
+-- TODO remake this to be case insensitive, test if i need both vars
 -- | ECDSA parameters to be extracted out of the input file / string.
 ecdsaParameters :: [[Char]]
-ecdsaParameters = ["p:","a:","b:","x:","y:","n:","h:","d:","Q:","Hash:","r:","s:"]
+ecdsaParameters =
+  ["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]
 
+-- | TODO: do i even need this?
 -- | Filtered input keywords that are present in the input file / string.
 ecdsaInputKeywords :: [[Char]]
-ecdsaInputKeywords = ["Curve","Key","Point","g:","Signature", "{", "}"] ++ ecdsaParameters
+ecdsaInputKeywords =
+  ["Curve", "Key", "Point", "g:", "Signature", "{", "}"] ++ ecdsaParameters
 
-
+{-- FUNCTION SECTION --}
 -- | This function calls the appropriate utility functions based on the Mode. 
 processMode :: Mode -> [Char] -> IO ()
 processMode mode content =
   case mode of
-    Information -> putStrLn $ "Information Mode\n" ++ content
+    Information -> print $ parseCurve content
     GenerateKeys -> putStrLn $ "Key Generation Mode\n" ++ content
     Sign -> putStrLn $ "Signature Mode\n" ++ content
     Verify -> putStrLn $ "Verification Mode\n" ++ content
+
+-- TODO: create a parsing function that checks, if the
+-- input file is in correct format -> contains only allowed keywords
+-- | Parse and carve out the whole ECDSA Curve out of an input string.
+parseCurve :: String -> Curve
+parseCurve str =
+  Curve
+    { p = parseParam "p:" str
+    , a = parseParam "a:" str
+    , b = parseParam "b:" str
+    , x = parseParam "x:" str
+    , y = parseParam "y:" str
+    , n = parseParam "n:" str
+    , h = parseParam "h:" str
+    }
 
 {-
 This function takes String representing hexadecimal number such as "0xFFAB"
@@ -98,14 +142,23 @@ integerToHexString :: Integer -> String
 integerToHexString num = "0x" ++ map toUpper (showHex num "")
 
 -- | Extracts specified ECDSA Curve related parameter from the loaded string. (p: etc.)
-extractCurveParameter :: String -> String -> [String] -> String
-extractCurveParameter rawInputString wantedParameter keywords =
-  let filteredLines = filter (wantedParameter `isInfixOf`) $ lines rawInputString
-  in case filteredLines of
-    [] -> " "
-    (line:_) -> getTrimmmedECDSAParameter keywords line
+extractCurveParameter :: String -> [String] -> String -> String
+extractCurveParameter wantedParameter keywords rawInputString =
+  let filteredLines =
+        filter (wantedParameter `isInfixOf`) $ lines rawInputString
+   in case filteredLines of
+        [] -> " "
+        (line:_) -> getTrimmmedECDSAParameter keywords line
 
+-- TODO: test replacing ecdsaParameters with ecdsaInputKeywords
 -- | Returns trimmed parameter - the value of a parameter ("p: 0xFFFFFFFFFF" -> "0xFFFFFFFFFF") from a line
 -- | of the input string
 getTrimmmedECDSAParameter :: [String] -> String -> String
-getTrimmmedECDSAParameter ecdsaParameters line = unwords $ filter (`notElem` ecdsaParameters) $ words line
+getTrimmmedECDSAParameter parameters line =
+  unwords $ filter (`notElem` parameters) $ words line
+
+-- TODO: maybe do this in Parser.hs?
+-- | Returns extracted ECDSA parameter converted to hex from input string / file.
+parseParam :: String -> String -> Integer
+parseParam parameter input =
+  integerFromHexString $ extractCurveParameter parameter ecdsaParameters input

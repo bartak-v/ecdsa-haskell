@@ -3,11 +3,11 @@ ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 
 
 The project was implemented in Haskell using GHC 9.2.5.
 
-
-
 ## Input format
-The format of the input file adhering to the ECDSA standard is as such:
 
+For readability purposes, the format of the input file adhering to the ECDSA standard should be as such:
+
+```json
 Curve {
 p: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
 a: 0
@@ -29,3 +29,28 @@ Signature {
 r: 0xb21ff64650be40610ba9324bc6bd273eafa87ac1bbc075be425c0f422f53196f
 s: 0x3b4d090468eddbea8a53c565d19a24c56377786c49a7f114459c43bc7d59615a
 }
+```
+
+While similar, the input format is not adhering to JSON in any way - it's pretty loose and the parser will parse properly even if the format is such as:
+
+```json
+p: 0xF...
+a: 0xF...
+b: 0xF...
+x: 0xF...
+y: 0xF...
+n: 0xF...
+h: 0xF...
+```
+
+The semantics and names of the ECDSA parameters (e.g. "c: ...") must be preserved. The parser is (as of now) case sensitive ("c:" =/= "C:")!. The parser does not care about the order of the parameters, but each parameter must be on it's own line. The parameters must be unique in the input. You can put random comments in the input files if they do not contain any of the keywords.
+
+The list of reserved keywords is:
+
+```json
+  ["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]
+```
+
+You can use these keywords only once in the input file.
+
+See `test/` directory for working examples and examples of "misformatted" inputs that the parser understands correctly.
