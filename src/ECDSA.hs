@@ -15,7 +15,7 @@ of the ECDSA standard and making calculations.
 module ECDSA where
 
 import Data.Char (toUpper)
-import Data.List (isPrefixOf)
+import Data.List (isPrefixOf,isInfixOf)
 import Numeric (showHex)
 
 -- | Mode of operation of the ECDSA
@@ -31,19 +31,21 @@ data Curve =
     { p :: Integer
     , a :: Integer
     , b :: Integer
-    , g :: Point
+    -- | x,y are coordinates of point G on the curve
+    , x :: Integer
+    , y :: Integer
     , n :: Integer
     , h :: Integer
     }
   deriving (Show)
 
 -- | The Representation of the Point on the Curve
-data Point =
+{-data Point =
   Point
     { x :: Integer
     , y :: Integer
     }
-  deriving (Show)
+  deriving (Show) -}
 
 -- | The hash of the message to be signed
 type Hash = Integer
@@ -61,6 +63,17 @@ type PrivateKey = Integer
 -- | The verifying public key 'Q'
 type PublicKey = Integer
 
+-- TODO remake this to be case insensitive
+-- | ECDSA parameters to be extracted out of the input file / string.
+ecdsaParameters :: [[Char]]
+ecdsaParameters = ["p:","a:","b:","x:","y:","n:","h:","d:","Q:","Hash:","r:","s:"]
+
+-- | Filtered input keywords that are present in the input file / string.
+ecdsaInputKeywords :: [[Char]]
+ecdsaInputKeywords = ["Curve","Key","Point","g:","Signature", "{", "}"] ++ ecdsaParameters
+
+
+-- | This function calls the appropriate utility functions based on the Mode. 
 processMode :: Mode -> [Char] -> IO ()
 processMode mode content =
   case mode of
@@ -83,3 +96,16 @@ integerFromHexString hexString =
 -- | Inverse function to the integerFromHexString
 integerToHexString :: Integer -> String
 integerToHexString num = "0x" ++ map toUpper (showHex num "")
+
+-- | Extracts specified ECDSA Curve related parameter from the loaded string. (p: etc.)
+extractCurveParameter :: String -> String -> [String] -> String
+extractCurveParameter rawInputString wantedParameter keywords =
+  let filteredLines = filter (wantedParameter `isInfixOf`) $ lines rawInputString
+  in case filteredLines of
+    [] -> " "
+    (line:_) -> getTrimmmedECDSAParameter keywords line
+
+-- | Returns trimmed parameter - the value of a parameter ("p: 0xFFFFFFFFFF" -> "0xFFFFFFFFFF") from a line
+-- | of the input string
+getTrimmmedECDSAParameter :: [String] -> String -> String
+getTrimmmedECDSAParameter ecdsaParameters line = unwords $ filter (`notElem` ecdsaParameters) $ words line

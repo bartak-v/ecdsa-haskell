@@ -17,7 +17,11 @@ For usage, call the program with the '--help' flag.
 -}
 module Main where
 
-import qualified ECDSA
+import qualified ECDSA (
+  Mode (..),
+  processMode
+  )
+
 import System.Environment (getArgs)
 
 help :: String
@@ -44,9 +48,8 @@ help =
 main :: IO ()
 main = do
   args <- getArgs
-  case args
+  case args of
     -- | One flag argument and STDIN
-        of
     [arg] -> do
       content <- getContents
       runAction arg content
