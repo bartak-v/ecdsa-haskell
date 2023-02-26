@@ -17,7 +17,8 @@ For usage, call the program with the '--help' flag.
 -}
 module Main where
 
-import qualified ECDSA (Mode(..), processMode)
+import qualified ECDSA (processMode)
+import qualified ECTypes(Mode(..))
 
 import System.Environment (getArgs)
 
@@ -58,7 +59,7 @@ main = do
     _ -> putStrLn "Usage: ./flp22-fun [-i | -k | -s | -v | --help] <file>"
 
 {-|
-  The 'runAction' function calls the appropriate ECDSA mode 
+  The 'processAction' function calls the appropriate ECDSA mode 
   based on command line flag argument.
   It takes two arguments 'choice' and 'content' of type 'String'.
 -}
@@ -66,9 +67,9 @@ processAction :: String -> String -> IO ()
 processAction "" "" = putStrLn "No argument or content specified."
 processAction choice content =
   case choice of
-    "-i" -> ECDSA.processMode ECDSA.Information content
-    "-k" -> ECDSA.processMode ECDSA.GenerateKeys content
-    "-s" -> ECDSA.processMode ECDSA.Sign content
-    "-v" -> ECDSA.processMode ECDSA.Verify content
+    "-i" -> ECDSA.processMode ECTypes.Information content
+    "-k" -> ECDSA.processMode ECTypes.GenerateKeys content
+    "-s" -> ECDSA.processMode ECTypes.Sign content
+    "-v" -> ECDSA.processMode ECTypes.Verify content
     "--help" -> putStr help
     _ -> putStrLn "Bad argument provided, use '--help' for more information."
