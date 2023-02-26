@@ -62,3 +62,4 @@ See `test/` directory for working examples and examples of "misformatted" inputs
 <https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
 <https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
 <https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm>
+<https://www.secg.org/sec1-v2.pdf>

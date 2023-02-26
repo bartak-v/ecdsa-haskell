@@ -39,9 +39,9 @@ keyGenerator curve@ECTypes.Curve {..} = do
   let lowerBound = 2 ^ ((256 - 1) :: Integer)
       upperBound = 2 ^ (256 :: Integer) - 1
   randomNumber <- randomRIO (lowerBound, upperBound)
-  let (pubKxR, pubKyR) = montgomeryLadder curve randomNumber (x, y)
+  let (pubKxR, pubKyR) = doubleAndAdd curve randomNumber (x, y)
   let (pubKx, pubKy) =
-        montgomeryLadder
+        doubleAndAdd
           curve
           0xc9dcda39c4d7ab9d854484dbed2963da9c0cf3c6e9333528b4422ef00dd0b28e
           (x, y)
@@ -51,7 +51,10 @@ keyGenerator curve@ECTypes.Curve {..} = do
       foo2 =
         32670510020758816978083085130507043184471273380659243275938904335757337482424
       testpoint = (foo1, foo2)
+      testpoint2 = negatePoint curve testpoint
   print $ doublePoint curve testpoint
+  print $ addPoints curve testpoint testpoint2
+  {-print $ doublePoint curve testpoint
   print $ isPointOnCurve curve $ doublePoint curve testpoint
   -- print $ isPointOnCurve curve $ doublePoint curve (32, 20)
   print $ isPointOnCurve curve $ negatePoint curve $ doublePoint curve testpoint -- tohle je divný... jaktože je to jiný, než když ho k sobě přičtu?
@@ -59,7 +62,7 @@ keyGenerator curve@ECTypes.Curve {..} = do
   print $ isPointOnCurve curve $ addPoints curve testpoint testpoint
   print $ ECTypes.integerToHexString randomNumber
   print $ (ECTypes.integerToHexString pubKx, pubKy)
-  print $ (ECTypes.integerToHexString pubKxR, pubKyR)
+  print $ (ECTypes.integerToHexString pubKxR, pubKyR)-}
 
 -- {Point arithmetics operations} --
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.
@@ -109,8 +112,8 @@ doublePoint ECTypes.Curve {a = a, p = prime} (xp, yp) = (xr, yr)
 -- taky zjistit, jak je to s tím bodem v nekonečnu (tady pro něj házim error)
 addPoints :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point -> ECTypes.Point
 addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
-  | x1 == x2 && y1 /= y2 = error "Can not subtract point from itself." -- Case for point1 + (-point1)
-  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2
+  | x1 == x2 && y1 /= y2 = error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
+  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2 TODO - je tohle správně? nebyl by to doubling? page 12 https://www.secg.org/sec1-v2.pdf
   | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime m2 -- Case for point1 /= point2
   where
     m1 = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime
@@ -125,12 +128,12 @@ calculatePointAdd (x1, y1) (x2, _) prime modulus =
     x3 = modulus * modulus - x1 - x2
     y3 = y1 + modulus * (x3 - x1)
 
--- Montgomery's ladder for scalar point multiplication.
 -- TODO check that doublePoint works correctly...
-montgomeryLadder :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
-montgomeryLadder curve@ECTypes.Curve {..} scalar point
+-- Double and add recursive algorithm for scalar point multiplication.
+doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
+doubleAndAdd curve@ECTypes.Curve {..} scalar point
   | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit
   | scalar == 1 = point
   | scalar `mod` 2 == 1 =
-    addPoints curve point $ montgomeryLadder curve (scalar - 1) point
-  | otherwise = montgomeryLadder curve (div scalar 2) $ doublePoint curve point -- doubling when d is even
+    addPoints curve point $ doubleAndAdd curve (scalar - 1) point
+  | otherwise = doubleAndAdd curve (div scalar 2) $ doublePoint curve point -- doubling when d is even
