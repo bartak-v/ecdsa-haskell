@@ -68,6 +68,9 @@ instance Show Curve where
     "}\n" ++
     "n: " ++ integerToHexString n ++ "\n" ++ "h: " ++ show h ++ "\n" ++ "}\n"
 
+-- A 2 dimensional point on the curve.
+type Point = (Integer, Integer) 
+
 -- The signing private key 'd'
 type PrivateKey = Integer
 

@@ -3,11 +3,9 @@ ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 
 
 The project was implemented in Haskell using GHC 9.2.5.
 
-The program is currently written only for the [secp256k1]<https://en.bitcoin.it/wiki/Secp256k1> curve. It will not work correctly if you change the curve parameters.
-
 ## Input format
 
-For readability purposes, the format of the input file adhering should be as such (secp256k1 curve):
+For readability purposes, the format of the input file should be as such (secp256k1 curve):
 
 ```json
 Curve {
