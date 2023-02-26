@@ -47,6 +47,7 @@ parseKey str =
 
 catCurveKey :: ECTypes.Curve -> ECTypes.Key -> String
 catCurveKey curve key = show curve ++ show key
+
 {-
 This function takes String representing decimal or hex 
  number such as "1234", "0xFFAB" or "FFAB" 

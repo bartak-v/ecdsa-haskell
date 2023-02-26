@@ -79,14 +79,13 @@ data Key =
     { d :: PrivateKey
     , q :: PublicKey
     }
+
 instance Show Key where
   show Key {..} =
     "Key {\n" ++
-    "d: " ++ integerToHexString d ++ "\n" ++
-    "Q: " ++ integerToHexString q ++ "\n" ++
-    "}\n"
-
-
+    "d: " ++
+    integerToHexString d ++
+    "\n" ++ "Q: " ++ integerToHexString q ++ "\n" ++ "}\n"
 
 -- The hash of the message to be signed
 type Hash = Integer
