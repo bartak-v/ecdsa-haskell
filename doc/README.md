@@ -3,9 +3,11 @@ ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 
 
 The project was implemented in Haskell using GHC 9.2.5.
 
+The program is currently written only for the [secp256k1]<https://en.bitcoin.it/wiki/Secp256k1> curve. It will not work correctly if you change the curve parameters.
+
 ## Input format
 
-For readability purposes, the format of the input file adhering to the ECDSA standard should be as such:
+For readability purposes, the format of the input file adhering should be as such (secp256k1 curve):
 
 ```json
 Curve {
@@ -54,3 +56,11 @@ The list of reserved keywords is:
 You can use these keywords only once in the input file / stream!
 
 See `test/` directory for working examples and examples of "misformatted" inputs that the parser understands correctly. If no input file is specified, the program reads STDIN.
+
+
+### References
+
+<http://learnyouahaskell.com>
+<https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
+<https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
+<https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm>

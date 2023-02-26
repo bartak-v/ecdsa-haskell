@@ -27,8 +27,7 @@ data Mode
 data ECDSA =
   ECDSA
     { curve :: Curve
-    , pk :: PrivateKey
-    , pubk :: PublicKey
+    , key :: Key
     , hash :: Hash
     , signature :: Signature
     }
@@ -49,7 +48,8 @@ data Curve =
 instance Show Curve where
   show Curve {..} =
     "Curve {\n" ++
-    "p: " ++ integerToHexString p ++
+    "p: " ++
+    integerToHexString p ++
     "\n" ++
     "a: " ++
     show a ++
@@ -59,14 +59,34 @@ instance Show Curve where
     "\n" ++
     "g: Point {" ++
     "\n" ++
-    "x: " ++ integerToHexString x ++
+    "x: " ++
+    integerToHexString x ++
     "\n" ++
-    "y: " ++ integerToHexString y ++
+    "y: " ++
+    integerToHexString y ++
     "\n" ++
     "}\n" ++
-    "n: " ++  integerToHexString n ++ "\n" 
-    ++ "h: " ++ show h ++ "\n" 
-    ++ "}"
+    "n: " ++ integerToHexString n ++ "\n" ++ "h: " ++ show h ++ "\n" ++ "}\n"
+
+-- The signing private key 'd'
+type PrivateKey = Integer
+
+-- The verifying public key 'Q'
+type PublicKey = Integer
+
+data Key =
+  Key
+    { d :: PrivateKey
+    , q :: PublicKey
+    }
+instance Show Key where
+  show Key {..} =
+    "Key {\n" ++
+    "d: " ++ integerToHexString d ++ "\n" ++
+    "Q: " ++ integerToHexString q ++ "\n" ++
+    "}\n"
+
+
 
 -- The hash of the message to be signed
 type Hash = Integer
@@ -77,15 +97,6 @@ data Signature =
     { r :: Integer
     , s :: Integer
     }
-
--- The signing private key 'd'
-type PrivateKey = Integer
-
--- The verifying public key 'Q'
-type PublicKey = Integer
-
-data Key = Key {d :: PrivateKey,
- q :: PublicKey}
 
 -- Convert Integer representation into Hexadecimal string with "0x" prefix.
 integerToHexString :: Integer -> String

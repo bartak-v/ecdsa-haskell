@@ -18,7 +18,7 @@ For usage, call the program with the '--help' flag.
 module Main where
 
 import qualified ECDSA (processMode)
-import qualified ECTypes(Mode(..))
+import qualified ECTypes (Mode(..))
 
 import System.Environment (getArgs)
 
@@ -46,8 +46,9 @@ help =
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
+  case args
     -- One flag argument and STDIN
+        of
     [arg] -> do
       content <- getContents
       processAction arg content

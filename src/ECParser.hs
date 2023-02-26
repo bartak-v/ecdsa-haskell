@@ -8,12 +8,11 @@
 
 This module functions as a Parser for the custom Elliptic Curve input format.
 -}
-
 module ECParser where
 
-import qualified ECTypes
 import Data.Char (isDigit)
 import Data.List (isInfixOf, isPrefixOf)
+import qualified ECTypes
 
 -- TODO remake this to be case insensitive, test if i need both vars
 -- Prefixes of the ECDSA parameters to be extracted out of the input file / string.
@@ -26,7 +25,6 @@ ecdsaParameters =
 ecdsaInputKeywords :: [[Char]]
 ecdsaInputKeywords =
   ["Curve", "Key", "Point", "g:", "Signature", "{", "}"] ++ ecdsaParameters
-
 
 -- TODO: create a parsing function that checks, if the
 -- input file is in correct format -> contains only allowed keywords
@@ -44,8 +42,11 @@ parseCurve str =
     }
 
 parseKey :: String -> ECTypes.Key
-parseKey str = ECTypes.Key {ECTypes.d = parseParam "d:" str, ECTypes.q = parseParam "d:" str}
+parseKey str =
+  ECTypes.Key {ECTypes.d = parseParam "d:" str, ECTypes.q = parseParam "Q:" str}
 
+catCurveKey :: ECTypes.Curve -> ECTypes.Key -> String
+catCurveKey curve key = show curve ++ show key
 {-
 This function takes String representing decimal or hex 
  number such as "1234", "0xFFAB" or "FFAB" 
@@ -55,7 +56,6 @@ integerFromString :: String -> Integer
 integerFromString str
   | all isDigit str || "0x" `isPrefixOf` str = read str
   | otherwise = read $ "0x" ++ str
-
 
 -- TODO: maybe handle the [] -> case better - do validation of the whole loaded input anyways
 -- Extracts specified ECDSA Curve related parameter from the loaded string. (p: etc.)
