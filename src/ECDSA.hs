@@ -50,19 +50,20 @@ keyGenerator curve@ECTypes.Curve {..} = do
         55066263022277343669578718895168534326250603453777594175500187360389116729240
       foo2 =
         32670510020758816978083085130507043184471273380659243275938904335757337482424
-      testpoint = (foo1, foo2)
-      testpoint2 = negatePoint curve testpoint
+      testpoint = (foo1,foo2)
   print $ doublePoint curve testpoint
-  print $ addPoints curve testpoint testpoint2
-  {-print $ doublePoint curve testpoint
   print $ isPointOnCurve curve $ doublePoint curve testpoint
   -- print $ isPointOnCurve curve $ doublePoint curve (32, 20)
   print $ isPointOnCurve curve $ negatePoint curve $ doublePoint curve testpoint -- tohle je divný... jaktože je to jiný, než když ho k sobě přičtu?
   print $ negatePoint curve $ addPoints curve testpoint testpoint
   print $ isPointOnCurve curve $ addPoints curve testpoint testpoint
   print $ ECTypes.integerToHexString randomNumber
+  
   print $ (ECTypes.integerToHexString pubKx, pubKy)
-  print $ (ECTypes.integerToHexString pubKxR, pubKyR)-}
+  print $ isPointOnCurve curve (pubKx, pubKy)
+
+  print $ (ECTypes.integerToHexString pubKxR, pubKyR)
+  print $ isPointOnCurve curve (pubKxR, pubKyR)
 
 -- {Point arithmetics operations} --
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.
@@ -113,7 +114,7 @@ doublePoint ECTypes.Curve {a = a, p = prime} (xp, yp) = (xr, yr)
 addPoints :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point -> ECTypes.Point
 addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
   | x1 == x2 && y1 /= y2 = error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
-  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2 TODO - je tohle správně? nebyl by to doubling? page 12 https://www.secg.org/sec1-v2.pdf
+  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2 TODO - bud odstranim doubling, nebo ho dám sem... - je tohle správně? nebyl by to doubling? page 12 https://www.secg.org/sec1-v2.pdf
   | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime m2 -- Case for point1 /= point2
   where
     m1 = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime
@@ -132,8 +133,8 @@ calculatePointAdd (x1, y1) (x2, _) prime modulus =
 -- Double and add recursive algorithm for scalar point multiplication.
 doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
 doubleAndAdd curve@ECTypes.Curve {..} scalar point
-  | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit
+  | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit, ad infinity point
   | scalar == 1 = point
   | scalar `mod` 2 == 1 =
-    addPoints curve point $ doubleAndAdd curve (scalar - 1) point
-  | otherwise = doubleAndAdd curve (div scalar 2) $ doublePoint curve point -- doubling when d is even
+    addPoints curve point $ doubleAndAdd curve (scalar - 1) point -- addition when scalar is odd
+  | otherwise = doubleAndAdd curve (div scalar 2) $ doublePoint curve point -- doubling when scalar is even
