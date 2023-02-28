@@ -67,10 +67,10 @@ Feel free to define your own Curves (according to the valid format), or copy som
 
 ### References
 
-Implemented according to <https://secg.org/sec1-v2.pdf>
-<https://neuromancer.sk/std/secg>
-<http://learnyouahaskell.com>
-<https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
-<https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
-<https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm>
-<https://www.secg.org/sec1-v2.pdf>
+* Implemented according to <https://secg.org/sec1-v2.pdf>
+* <https://neuromancer.sk/std/secg>
+* <http://learnyouahaskell.com>
+* <https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
+* <https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
+* <https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm>
+* <https://www.secg.org/sec1-v2.pdf>
