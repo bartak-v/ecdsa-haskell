@@ -9,7 +9,7 @@ sleep 2
 sleep 1
 echo -e "\n------ [TESTING] secp192r1 ------"
 sleep 2
-./test.sh curves/secp192r1 128
+./test.sh curves/secp192r1 128 # todo test, that the hash lenght can be mismatched with the key length (it probably can i guess)...
 sleep 1
 echo -e "\n------ [TESTING] secp256k1 ------"
 sleep 2
