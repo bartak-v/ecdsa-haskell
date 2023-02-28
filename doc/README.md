@@ -1,4 +1,5 @@
 # ecdsa-haskell
+
 ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 2023.
 
 The project was implemented in Haskell using GHC 9.2.5.
@@ -73,4 +74,3 @@ Feel free to define your own Curves (according to the valid format), or copy som
 * <https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
 * <https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
 * <https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm>
-* <https://www.secg.org/sec1-v2.pdf>
