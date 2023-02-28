@@ -42,7 +42,7 @@ keyGenerator curve@ECTypes.Curve {..} = do
   randomNumber <- randomRIO (lowerBound, upperBound)
   let generatorPoint = (x,y) :: ECTypes.Point -- Get the Generator Point out of curve
       keyPair = ECTypes.Key {d = randomNumber, q = doubleAndAdd curve randomNumber generatorPoint } -- Calculate the keypair
-  print $ ECParser.catCurveKey curve keyPair -- Print it out
+  putStr $ ECParser.catCurveKey curve keyPair -- Print it out
 
 -- TODO: vyřešit jak ukládat negativní number (prostě try and error, hold se to bude počítat dvakrát no)
 

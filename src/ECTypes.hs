@@ -101,13 +101,13 @@ data Signature =
 integerToHexString :: Integer -> String
 integerToHexString num = "0x" ++ integerToAlmostHexString num
 
---- Convert Integer to Hexadecimal without 0x prefix.
+-- Convert Integer to Hexadecimal without 0x prefix.
 integerToAlmostHexString :: Integer -> String
 integerToAlmostHexString num = map toUpper (showHex num "")
 
 -- Convert PrivateKey and PublicKey to a formatted string.
 formatKeyPair :: Key -> String
-formatKeyPair kp@Key {..} =
+formatKeyPair Key {..} =
   "Key {\n" ++
   "d: " ++
   "0x" ++
@@ -119,7 +119,7 @@ formatKeyPair kp@Key {..} =
   padPointCoordinate keyLen ypub ++ "\n" ++ "}\n"
   where
     pk = integerToAlmostHexString d
-    (xpub, ypub) = q
+    (xpub, ypub) = convertPoint q
     keyLen = length pk
 
 -- Pad hex string with leading zeros to align with n Bytes.
@@ -132,6 +132,15 @@ padPointCoordinate n integer =
   where
     padding = concat $ replicate (n - length str) "0"
     str = integerToAlmostHexString integer
+
+-- Convert Point to positive values.
+-- This is needed to store the public key as positive Point.
+-- This is not the same as negatePoint and is used
+-- when storing and parsing the KeyPair out of input.
+convertPoint :: PublicKey -> PublicKey
+convertPoint (xp,yp) = if yp < 0 then (xp,-yp) else (xp,yp)
+
+
 -- Parse KeyPair out of the input string. Remove 
 -- leading 0x04 in pubkey - which must be there always to signify uncompressed.
 -- parseKeyPair :: String -> Key
