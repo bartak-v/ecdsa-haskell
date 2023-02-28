@@ -34,36 +34,17 @@ generateKeys :: String -> IO ()
 generateKeys str = keyGenerator $ ECParser.parseCurve str
 
 -- Generates ECDSA keys, private key "d" is random 256 bit value.
+-- public key Q is Point on the Curve counted as d*G, where G is the generator point.
 keyGenerator :: ECTypes.Curve -> IO ()
 keyGenerator curve@ECTypes.Curve {..} = do
   let lowerBound = 2 ^ ((256 - 1) :: Integer)
       upperBound = 2 ^ (256 :: Integer) - 1
   randomNumber <- randomRIO (lowerBound, upperBound)
-  let (pubKxR, pubKyR) = doubleAndAdd curve randomNumber (x, y)
-  let (pubKx, pubKy) =
-        doubleAndAdd
-          curve
-          0xc9dcda39c4d7ab9d854484dbed2963da9c0cf3c6e9333528b4422ef00dd0b28e
-          (x, y)
-  -- Tests
-  let foo1 =
-        55066263022277343669578718895168534326250603453777594175500187360389116729240
-      foo2 =
-        32670510020758816978083085130507043184471273380659243275938904335757337482424
-      testpoint = (foo1,foo2)
-  print $ doublePoint curve testpoint
-  print $ isPointOnCurve curve $ doublePoint curve testpoint
-  -- print $ isPointOnCurve curve $ doublePoint curve (32, 20)
-  print $ isPointOnCurve curve $ negatePoint curve $ doublePoint curve testpoint -- tohle je divný... jaktože je to jiný, než když ho k sobě přičtu?
-  print $ negatePoint curve $ addPoints curve testpoint testpoint
-  print $ isPointOnCurve curve $ addPoints curve testpoint testpoint
-  print $ ECTypes.integerToHexString randomNumber
-  
-  print $ (ECTypes.integerToHexString pubKx, pubKy)
-  print $ isPointOnCurve curve (pubKx, pubKy)
+  let generatorPoint = (x,y) :: ECTypes.Point -- Get the Generator Point out of curve
+      keyPair = ECTypes.Key {d = randomNumber, q = doubleAndAdd curve randomNumber generatorPoint } -- Calculate the keypair
+  print $ ECParser.catCurveKey curve keyPair -- Print it out
 
-  print $ (ECTypes.integerToHexString pubKxR, pubKyR)
-  print $ isPointOnCurve curve (pubKxR, pubKyR)
+-- TODO: vyřešit jak ukládat negativní number (prostě try and error, hold se to bude počítat dvakrát no)
 
 -- {Point arithmetics operations} --
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.
@@ -97,8 +78,6 @@ negatePoint ECTypes.Curve {p = prime} (x1, y1)
   | otherwise = (x1, -y1 `mod` prime)
 
 -- Double an EC Point
--- 55066263022277343669578718895168534326250603453777594175500187360389116729240 32670510020758816978083085130507043184471273380659243275938904335757337482424
--- REWRITE for Curve -> Point -> Point ... 
 -- TODO jaktože doublePoint a addPoint dávaj na stejný bod jiný Y? -ono je asi negated
 doublePoint :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point
 doublePoint ECTypes.Curve {a = a, p = prime} (xp, yp) = (xr, yr)
@@ -113,8 +92,9 @@ doublePoint ECTypes.Curve {a = a, p = prime} (xp, yp) = (xr, yr)
 -- taky zjistit, jak je to s tím bodem v nekonečnu (tady pro něj házim error)
 addPoints :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point -> ECTypes.Point
 addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
-  | x1 == x2 && y1 /= y2 = error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
-  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2 TODO - bud odstranim doubling, nebo ho dám sem... - je tohle správně? nebyl by to doubling? page 12 https://www.secg.org/sec1-v2.pdf
+  | x1 == x2 && y1 /= y2 =
+    error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
+  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2
   | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime m2 -- Case for point1 /= point2
   where
     m1 = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime
@@ -131,9 +111,10 @@ calculatePointAdd (x1, y1) (x2, _) prime modulus =
 
 -- TODO check that doublePoint works correctly...
 -- Double and add recursive algorithm for scalar point multiplication.
+-- Returns scalar*Point (on Fp)
 doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
 doubleAndAdd curve@ECTypes.Curve {..} scalar point
-  | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit, ad infinity point
+  | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit, add infinity point
   | scalar == 1 = point
   | scalar `mod` 2 == 1 =
     addPoints curve point $ doubleAndAdd curve (scalar - 1) point -- addition when scalar is odd

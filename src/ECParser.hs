@@ -41,10 +41,10 @@ parseCurve str =
     , ECTypes.h = parseParam "h:" str
     }
 
-parseKey :: String -> ECTypes.Key
-parseKey str =
-  ECTypes.Key {ECTypes.d = parseParam "d:" str, ECTypes.q = parseParam "Q:" str}
-
+-- TODO remake
+--parseKey :: String -> ECTypes.Key
+--parseKey str =
+--  ECTypes.Key {ECTypes.d = parseParam "d:" str, ECTypes.q = parseParam "Q:" str}
 catCurveKey :: ECTypes.Curve -> ECTypes.Key -> String
 catCurveKey curve key = show curve ++ show key
 
@@ -74,7 +74,6 @@ getTrimmmedParameterValue :: [String] -> String -> String
 getTrimmmedParameterValue parameters line =
   unwords $ filter (`notElem` parameters) $ words line
 
--- TODO: maybe do this in Parser.hs?
 -- Returns extracted ECDSA parameter converted to hex from input string / file.
 parseParam :: String -> String -> Integer
 parseParam parameter input =

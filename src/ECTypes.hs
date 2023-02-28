@@ -24,14 +24,6 @@ data Mode
   | Sign
   | Verify
 
-data ECDSA =
-  ECDSA
-    { curve :: Curve
-    , key :: Key
-    , hash :: Hash
-    , signature :: Signature
-    }
-
 -- The Elliptical Curve representation
 data Curve =
   Curve
@@ -71,12 +63,21 @@ instance Show Curve where
 -- A 2 dimensional point on the curve.
 type Point = (Integer, Integer)
 
+-- Infinity point representation
+infinityPoint :: Point
+infinityPoint = (0, 0)
+
+-- alternative, TODO test
+data InfinityPoint =
+  InfinityPoint
+
 -- The signing private key 'd'
 type PrivateKey = Integer
 
 -- The verifying public key 'Q'
-type PublicKey = Integer
+type PublicKey = Point
 
+-- KeyPair
 data Key =
   Key
     { d :: PrivateKey
@@ -84,11 +85,7 @@ data Key =
     }
 
 instance Show Key where
-  show Key {..} =
-    "Key {\n" ++
-    "d: " ++
-    integerToHexString d ++
-    "\n" ++ "Q: " ++ integerToHexString q ++ "\n" ++ "}\n"
+  show kp@Key {..} = formatKeyPair kp
 
 -- The hash of the message to be signed
 type Hash = Integer
@@ -102,4 +99,39 @@ data Signature =
 
 -- Convert Integer representation into Hexadecimal string with "0x" prefix.
 integerToHexString :: Integer -> String
-integerToHexString num = "0x" ++ map toUpper (showHex num "")
+integerToHexString num = "0x" ++ integerToAlmostHexString num
+
+--- Convert Integer to Hexadecimal without 0x prefix.
+integerToAlmostHexString :: Integer -> String
+integerToAlmostHexString num = map toUpper (showHex num "")
+
+-- Convert PrivateKey and PublicKey to a formatted string.
+formatKeyPair :: Key -> String
+formatKeyPair kp@Key {..} =
+  "Key {\n" ++
+  "d: " ++
+  "0x" ++
+  pk ++
+  "\n" ++
+  "Q: " ++
+  "0x04" ++
+  padPointCoordinate keyLen xpub ++
+  padPointCoordinate keyLen ypub ++ "\n" ++ "}\n"
+  where
+    pk = integerToAlmostHexString d
+    (xpub, ypub) = q
+    keyLen = length pk
+
+-- Pad hex string with leading zeros to align with n Bytes.
+-- And return this as a hex string.
+padPointCoordinate :: Int -> Integer -> String
+padPointCoordinate n integer =
+  if length str >= n
+    then str
+    else padding ++ str
+  where
+    padding = concat $ replicate (n - length str) "0"
+    str = integerToAlmostHexString integer
+-- Parse KeyPair out of the input string. Remove 
+-- leading 0x04 in pubkey - which must be there always to signify uncompressed.
+-- parseKeyPair :: String -> Key

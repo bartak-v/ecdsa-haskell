@@ -24,3 +24,4 @@ cabal.project.local~
 *.zip
 .vscode/
 flp22-fun
+debug.hs
