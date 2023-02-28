@@ -55,9 +55,13 @@ You can use these keywords only once in the input file / stream!
 
 See `test/` directory for working examples and examples of "misformatted" inputs that the parser understands correctly. If no input file is specified, the program reads STDIN.
 
+Public Key is saved as `0x04<PADDING>PUB_KEY_X<PADDING>CONVERTED_PUB_KEY_Y`, which is 4+2\*n bytes long, where 2 bytes are "0x" hex prefix, "04" is uncompressed pubkey prefix and 2*nlen is the (Xpub,Ypub) point with padding. nlen is the key-length, which is based on how long the prime n () is.
+
+This program is able to parse arbitrary curve (such as SECP256K1, SECP384R1, etc.) # TODO TEST THIS
 
 ### References
 
+Implemented according to <https://secg.org/sec1-v2.pdf>
 <http://learnyouahaskell.com>
 <https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
 <https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
