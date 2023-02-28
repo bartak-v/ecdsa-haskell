@@ -40,12 +40,13 @@ keyGenerator curve@ECTypes.Curve {..} = do
   let lowerBound = 2 ^ ((256 - 1) :: Integer)
       upperBound = 2 ^ (256 :: Integer) - 1
   randomNumber <- randomRIO (lowerBound, upperBound)
-  let generatorPoint = (x,y) :: ECTypes.Point -- Get the Generator Point out of curve
-      keyPair = ECTypes.Key {d = randomNumber, q = doubleAndAdd curve randomNumber generatorPoint } -- Calculate the keypair
+  let generatorPoint = (x, y) :: ECTypes.Point -- Get the Generator Point out of curve
+      keyPair =
+        ECTypes.Key
+          {d = randomNumber, q = doubleAndAdd curve randomNumber generatorPoint} -- Calculate the keypair
   putStr $ ECParser.catCurveKey curve keyPair -- Print it out
 
 -- TODO: vyřešit jak ukládat negativní number (prostě try and error, hold se to bude počítat dvakrát no)
-
 -- {Point arithmetics operations} --
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.
 extendedEuclideanAlgorithm :: Integer -> Integer -> (Integer, Integer, Integer)

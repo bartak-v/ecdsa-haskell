@@ -138,9 +138,10 @@ padPointCoordinate n integer =
 -- This is not the same as negatePoint and is used
 -- when storing and parsing the KeyPair out of input.
 convertPoint :: PublicKey -> PublicKey
-convertPoint (xp,yp) = if yp < 0 then (xp,-yp) else (xp,yp)
-
-
+convertPoint (xp, yp) =
+  if yp < 0
+    then (xp, -yp)
+    else (xp, yp)
 -- Parse KeyPair out of the input string. Remove 
 -- leading 0x04 in pubkey - which must be there always to signify uncompressed.
 -- parseKeyPair :: String -> Key
