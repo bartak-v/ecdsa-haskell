@@ -50,7 +50,7 @@ case $KEY_LENGTH in
     MD=" -sha384 "
     ;;
   *)
-    echo -e "[ERROR] test.sh currently supports only hashes with 128, 256, 384 bits long.\n For testing arbitrary ECDSA key (and hash) length, run the ECDSA program manually."
+    echo -e "[ERROR] test.sh currently supports only hashes with 128, 256, 384 bits long.\n For testing arbitrary ECDSA hash length, run the ECDSA program manually."
     exit 1
     ;;
 esac
