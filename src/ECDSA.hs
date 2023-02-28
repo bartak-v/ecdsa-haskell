@@ -18,6 +18,7 @@ module ECDSA where
 
 import qualified ECParser
 import qualified ECTypes
+import Numeric (showHex)
 import System.Random
 
 -- This function calls the appropriate utility functions based on the Mode. 
@@ -33,19 +34,24 @@ processMode mode content =
 generateKeys :: String -> IO ()
 generateKeys str = keyGenerator $ ECParser.parseCurve str
 
--- Generates ECDSA keys, private key "d" is random 256 bit value.
+-- Generates ECDSA keys, private key "d" is random nlen bit value.
+-- "nlen" is based on the length of "n" prime number order of G in the curve.
 -- public key Q is Point on the Curve counted as d*G, where G is the generator point.
 keyGenerator :: ECTypes.Curve -> IO ()
 keyGenerator curve@ECTypes.Curve {..} = do
-  let lowerBound = 2 ^ ((256 - 1) :: Integer)
-      upperBound = 2 ^ (256 :: Integer) - 1
-  randomNumber <- randomRIO (lowerBound, upperBound)
-  let generatorPoint = (x, y) :: ECTypes.Point -- Get the Generator Point out of curve
+  let nlen = toInteger $ 4 * length (showHex n "") -- number of bits in the n Hexstring
+      lowerBound = 2 ^ (nlen - 1)
+      upperBound = 2 ^ nlen - 1
+  randomNumber <- randomRIO (lowerBound, upperBound) -- generate private key
+  let generatorPoint = (x, y) :: ECTypes.Point -- Get the Generator Point out of the curve
       keyPair =
         ECTypes.Key
-          {d = randomNumber, q = doubleAndAdd curve randomNumber generatorPoint} -- Calculate the keypair
+          { d = randomNumber
+          , q = doubleAndAdd curve randomNumber generatorPoint -- Calculate the keypair
+          }
   putStr $ ECParser.catCurveKey curve keyPair -- Print it out
 
+-- TODO, dodělat parsování, sign a verify...
 -- TODO: vyřešit jak ukládat negativní number (prostě try and error, hold se to bude počítat dvakrát no)
 -- {Point arithmetics operations} --
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.

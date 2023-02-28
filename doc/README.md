@@ -3,11 +3,13 @@ ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 
 
 The project was implemented in Haskell using GHC 9.2.5.
 
+This program is able to parse and work with arbitrary Elliptical Curve (such as SECP256K1, SECP384R1, etc.).
+
 ## Input format
 
-For readability purposes, the format of the input file should be as such (secp256k1 curve):
+For readability purposes, the format of the input file should be as such (secp256k1 curve for example):
 
-```json
+```bash
 Curve {
 p: 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
 a: 0
@@ -57,11 +59,15 @@ See `test/` directory for working examples and examples of "misformatted" inputs
 
 Public Key is saved as `0x04<PADDING>PUB_KEY_X<PADDING>CONVERTED_PUB_KEY_Y`, which is 4+2\*n bytes long, where 2 bytes are "0x" hex prefix, "04" is uncompressed pubkey prefix and 2*nlen is the (Xpub,Ypub) point with padding. nlen is the key-length, which is based on how long the prime n () is.
 
-This program is able to parse arbitrary curve (such as SECP256K1, SECP384R1, etc.) # TODO TEST THIS
+### Testing
+
+I prepared "testing suite" that runs all of the modes of the ECDSA-Haskell program for common Elliptical Curves that are located in the `curves/` directory.
+Feel free to define your own Curves (according to the valid format), or copy some from the internet. To test the program, run `./test_suite.sh`. Look into `test.sh` script to see what is being tested. (TODO víc se rozepsat) TODO přidat nestandardní Curves.
 
 ### References
 
 Implemented according to <https://secg.org/sec1-v2.pdf>
+<https://neuromancer.sk/std/secg>
 <http://learnyouahaskell.com>
 <https://www.cs.miami.edu/home/burt/learning/Csc609.142/ecdsa-cert.pdf>
 <https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm>
