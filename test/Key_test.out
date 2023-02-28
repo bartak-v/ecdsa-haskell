@@ -2,7 +2,3 @@ Key {
 d: 0xc9dcda39c4d7ab9d854484dbed2963da9c0cf3c6e9333528b4422ef00dd0b28e
 Q: 0x040e411e56210f20bf5172cbefab02135421b1eb58f6918d28c1b848be5eee42...
 }
-0xE411E56210F20BF5172CBEFAB02135421B1EB58F6918D28C1B848BE5EEE42E4
-
--- Předpokládám, že 0 za 0x není chyba, tudíž to beru jako paritní bit, který mi určuje Y souřadnici (ale kterou z nich) - pokus omyl.
--- ten klíč je nějak krátkej, ale vychází mi ten samej... je blbě převod na ty hexa?...
