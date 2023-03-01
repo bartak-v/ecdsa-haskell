@@ -18,41 +18,78 @@ module ECDSA where
 
 import qualified ECParser
 import qualified ECTypes
-import Numeric (showHex)
-import System.Random
+import System.Random (randomRIO)
 
 -- This function calls the appropriate utility functions based on the Mode. 
 processMode :: ECTypes.Mode -> [Char] -> IO ()
 processMode mode content =
   case mode of
     ECTypes.Information -> putStr $ show $ ECParser.parseCurve content
-    ECTypes.GenerateKeys -> generateKeys content -- printing result: putStr $ ECParser.catCurveKey (ECParser.parseCurve content) (ECParser.parseKey content)
-    ECTypes.Sign -> putStrLn $ "Signature Mode\n" ++ content
+    ECTypes.GenerateKeys -> keyGenerator curve
+    ECTypes.Sign -> signatureGenerator curve privateKey hash
     ECTypes.Verify -> putStrLn $ "Verification Mode\n" ++ content
-
--- Get the Curve out of the string TODO maybe delete
-generateKeys :: String -> IO ()
-generateKeys str = keyGenerator $ ECParser.parseCurve str
+  where
+    curve = ECParser.parseCurve content
+    privateKey = ECParser.parseParam "d:" content
+    hash = ECParser.parseParam "Hash:" content
 
 -- Generates ECDSA keys, private key "d" is random nlen bit value.
 -- "nlen" is based on the length of "n" prime number order of G in the curve.
 -- public key Q is Point on the Curve counted as d*G, where G is the generator point.
 keyGenerator :: ECTypes.Curve -> IO ()
 keyGenerator curve@ECTypes.Curve {..} = do
-  let nlen = toInteger $ 4 * length (showHex n "") -- number of bits in the n Hexstring
-      lowerBound = 2 ^ (nlen - 1)
-      upperBound = 2 ^ nlen - 1
-  randomNumber <- randomRIO (lowerBound, upperBound) -- generate private key
+  randomNumber <- randomRIO (1, n - 1) -- generate private key in the range (1, n-1)
   let generatorPoint = (x, y) :: ECTypes.Point -- Get the Generator Point out of the curve
       keyPair =
-        ECTypes.Key
+        ECTypes.KeyPair
           { d = randomNumber
           , q = doubleAndAdd curve randomNumber generatorPoint -- Calculate the keypair
           }
   putStr $ ECParser.catCurveKey curve keyPair -- Print it out
 
+-- Generates ECDSA signature of Hash over Curve with PrivateKey.
+signatureGenerator ::
+     ECTypes.Curve -> ECTypes.PrivateKey -> ECTypes.Hash -> IO ()
+signatureGenerator curve@ECTypes.Curve {..} privateKey hash = do
+  let truncHash =
+        ECParser.integerFromString $
+        ECTypes.integerToAlmostHexString $ truncateHash curve hash
+  k <- randomRIO (1, n - 1)
+  let (r', s') = generateSignature curve privateKey k truncHash -- generate non-null r,s
+  if r' == 0 || s' == 0
+    then signatureGenerator curve privateKey hash
+    else print ECTypes.Signature {r = r', s = s'}
+
+-- Generate signature, until its non-zero (there's a little probability chance that it is zero).
+generateSignature ::
+     ECTypes.Curve
+  -> ECTypes.PrivateKey
+  -> Integer
+  -> ECTypes.Hash
+  -> ECTypes.Point
+generateSignature curve@ECTypes.Curve {..} pk k hash = (r, s)
+  where
+    (x1, _) = doubleAndAdd curve k (x, y) -- generate random point on Curve
+    r = x1 `mod` n
+    s = ((hash + r * pk) * modularInverse k n) `mod` n
+
+{-
+ Truncate Hash to the same length as "n".
+ This does not handle the situation that your hash is less in length
+ than "n" - use hashes as long or longer than "n".
+ Padding and rehashing is not implemented atm - its up to the user
+ how long a hash they use.
+-}
+truncateHash :: ECTypes.Curve -> ECTypes.Hash -> ECTypes.Hash
+truncateHash ECTypes.Curve {..} hash =
+  ECParser.integerFromString $
+  take (length hashStr - (length hashStr - length nStr)) hashStr
+  where
+    hashStr = ECTypes.integerToAlmostHexString hash
+    nStr = ECTypes.integerToAlmostHexString n
+
 -- TODO, dodělat parsování, sign a verify...
--- TODO: vyřešit jak ukládat negativní number (prostě try and error, hold se to bude počítat dvakrát no)
+-- TODO: vyřešit jak načítat negativní number v pubkey (prostě try and error, hold se to bude počítat dvakrát no)
 -- {Point arithmetics operations} --
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.
 extendedEuclideanAlgorithm :: Integer -> Integer -> (Integer, Integer, Integer)
@@ -75,10 +112,12 @@ modularInverse number modulus
   where
     (_, finalBezoutCoefA, _) = extendedEuclideanAlgorithm number modulus
 
+-- Checks wheter a given point is on the Curve.
 isPointOnCurve :: ECTypes.Curve -> ECTypes.Point -> Bool
 isPointOnCurve ECTypes.Curve {a = a, b = b, p = prime} (x, y) =
   (y * y - x * x * x - a * x - b) `mod` prime == 0
 
+-- Returns negation of a point over Curve.
 negatePoint :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point
 negatePoint ECTypes.Curve {p = prime} (x1, y1)
   | x1 == 0 && y1 == 0 = error "Can not negate (0,0)."
@@ -107,7 +146,7 @@ addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
     m1 = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime
     m2 = (y1 - y2) * modularInverse (x1 - x2) prime
 
--- Returns the new point.
+-- Returns the newly calculated point.
 calculatePointAdd ::
      ECTypes.Point -> ECTypes.Point -> Integer -> Integer -> ECTypes.Point
 calculatePointAdd (x1, y1) (x2, _) prime modulus =
@@ -118,7 +157,7 @@ calculatePointAdd (x1, y1) (x2, _) prime modulus =
 
 -- TODO check that doublePoint works correctly...
 -- Double and add recursive algorithm for scalar point multiplication.
--- Returns scalar*Point (on Fp)
+-- Returns scalar*Point (over Curve)
 doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
 doubleAndAdd curve@ECTypes.Curve {..} scalar point
   | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit, add infinity point

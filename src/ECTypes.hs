@@ -37,6 +37,7 @@ data Curve =
     , h :: Integer
     }
 
+-- Show the Curve in a formatted way.
 instance Show Curve where
   show Curve {..} =
     "Curve {\n" ++
@@ -78,14 +79,28 @@ type PrivateKey = Integer
 type PublicKey = Point
 
 -- KeyPair
-data Key =
-  Key
+data KeyPair =
+  KeyPair
     { d :: PrivateKey
     , q :: PublicKey
     }
 
-instance Show Key where
-  show kp@Key {..} = formatKeyPair kp
+-- Show the KeyPair in a formatted way.
+instance Show KeyPair where
+  show KeyPair {..} =
+    "Key {\n" ++
+    "d: " ++
+    "0x" ++
+    pk ++
+    "\n" ++
+    "Q: " ++
+    "0x04" ++
+    padPointCoordinate keyLen xpub ++
+    padPointCoordinate keyLen ypub ++ "\n" ++ "}\n"
+    where
+      pk = integerToAlmostHexString d
+      (xpub, ypub) = convertPoint q
+      keyLen = length pk
 
 -- The hash of the message to be signed
 type Hash = Integer
@@ -97,6 +112,13 @@ data Signature =
     , s :: Integer
     }
 
+instance Show Signature where
+  show Signature {..} =
+    "Signature {\n" ++
+    "r: " ++
+    integerToHexString r ++
+    "\n" ++ "s: " ++ integerToHexString s ++ "\n" ++ "}\n"
+
 -- Convert Integer representation into Hexadecimal string with "0x" prefix.
 integerToHexString :: Integer -> String
 integerToHexString num = "0x" ++ integerToAlmostHexString num
@@ -105,25 +127,8 @@ integerToHexString num = "0x" ++ integerToAlmostHexString num
 integerToAlmostHexString :: Integer -> String
 integerToAlmostHexString num = map toUpper (showHex num "")
 
--- Convert PrivateKey and PublicKey to a formatted string.
-formatKeyPair :: Key -> String
-formatKeyPair Key {..} =
-  "Key {\n" ++
-  "d: " ++
-  "0x" ++
-  pk ++
-  "\n" ++
-  "Q: " ++
-  "0x04" ++
-  padPointCoordinate keyLen xpub ++
-  padPointCoordinate keyLen ypub ++ "\n" ++ "}\n"
-  where
-    pk = integerToAlmostHexString d
-    (xpub, ypub) = convertPoint q
-    keyLen = length pk
-
--- Pad hex string with leading zeros to align with n Bytes.
--- And return this as a hex string.
+-- Pad hex string with leading zeros to align with n Bytes
+-- and return this as a hex string.
 padPointCoordinate :: Int -> Integer -> String
 padPointCoordinate n integer =
   if length str >= n
@@ -142,6 +147,3 @@ convertPoint (xp, yp) =
   if yp < 0
     then (xp, -yp)
     else (xp, yp)
--- Parse KeyPair out of the input string. Remove 
--- leading 0x04 in pubkey - which must be there always to signify uncompressed.
--- parseKeyPair :: String -> Key

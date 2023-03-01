@@ -41,12 +41,9 @@ parseCurve str =
     , ECTypes.h = parseParam "h:" str
     }
 
--- TODO remake
---parseKey :: String -> ECTypes.Key
---parseKey str =
---  ECTypes.Key {ECTypes.d = parseParam "d:" str, ECTypes.q = parseParam "Q:" str}
-catCurveKey :: ECTypes.Curve -> ECTypes.Key -> String
-catCurveKey curve key = show curve ++ show key
+-- Return formatted Curve with KeyPair as a String.
+catCurveKey :: ECTypes.Curve -> ECTypes.KeyPair -> String
+catCurveKey curve keyPair = show curve ++ show keyPair
 
 {-
 This function takes String representing decimal or hex 
@@ -78,3 +75,6 @@ getTrimmmedParameterValue parameters line =
 parseParam :: String -> String -> Integer
 parseParam parameter input =
   integerFromString $ extractCurveParameter parameter ecdsaParameters input
+-- Returns parsed public key out of the input string.
+--parsePublicKey :: String -> ECTypes.PublicKey
+--parsePublicKey str = ()

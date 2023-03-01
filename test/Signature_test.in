@@ -14,5 +14,3 @@ d: 0xc9dcda39c4d7ab9d854484dbed2963da9c0cf3c6e9333528b4422ef00dd0b28e
 Q: 0x040e411e56210f20bf5172cbefab02135421b1eb58f6918d28c1b848be5eee42
 }
 Hash: 0x94996fead5b722c3bd07360c459927976e804f869626f4897def03fa56b009e3
-# to Q: je buď 259 bitů, nebo 252 (pokud nepočítám 0x040)
-# na začátek narvat padding tzn 0x04 PADDING KEY_X KEY_Y ? pořádně si pročíst ten dokument ? nebo je ta 0 parity bit? ffs
