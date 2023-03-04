@@ -14,20 +14,11 @@ import Data.Char (isDigit)
 import Data.List (isInfixOf, isPrefixOf)
 import qualified ECTypes
 
--- TODO remake this to be case insensitive, test if i need both vars
 -- Prefixes of the ECDSA parameters to be extracted out of the input file / string.
 ecdsaParameters :: [[Char]]
 ecdsaParameters =
   ["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]
 
--- | TODO: do i even need this?
--- Filtered input keywords that are present in the input file / string.
-ecdsaInputKeywords :: [[Char]]
-ecdsaInputKeywords =
-  ["Curve", "Key", "Point", "g:", "Signature", "{", "}"] ++ ecdsaParameters
-
--- TODO: create a parsing function that checks, if the
--- input file is in correct format -> contains only allowed keywords
 -- Parse and carve out the whole ECDSA Curve out of an input string.
 parseCurve :: String -> ECTypes.Curve
 parseCurve str =
@@ -65,16 +56,22 @@ extractCurveParameter wantedParameter keywords rawInputString =
         [] -> " "
         (line:_) -> getTrimmmedParameterValue keywords line
 
--- Returns trimmed parameter - the value of a parameter ("p: 0xFFFFFFFFFF" -> "0xFFFFFFFFFF") from a line
--- of the input string
+-- Returns trimmed parameter - the value of a parameter ("p: 0xFFFFFFFFFF" -> "0xFFFFFFFFFF") 
+-- from a line of the input string
 getTrimmmedParameterValue :: [String] -> String -> String
 getTrimmmedParameterValue parameters line =
   unwords $ filter (`notElem` parameters) $ words line
 
--- Returns extracted ECDSA parameter converted to hex from input string / file.
+-- Returns extracted ECDSA parameter converted to integer from input string / file.
 parseParam :: String -> String -> Integer
 parseParam parameter input =
   integerFromString $ extractCurveParameter parameter ecdsaParameters input
+
 -- Returns parsed public key out of the input string.
---parsePublicKey :: String -> ECTypes.PublicKey
---parsePublicKey str = ()
+parsePubKey :: String -> ECTypes.PublicKey
+parsePubKey str = (xpub, ypub)
+  where
+    nlen = length $ ECTypes.integerToAlmostHexString $ parseParam "n:" str
+    xpub = integerFromString $ take nlen trimmedPubKeyStr -- Get the x and y coordinate from uncompressed pubkey
+    ypub = integerFromString $ take nlen (drop nlen trimmedPubKeyStr)
+    trimmedPubKeyStr = drop 4 $ extractCurveParameter "Q:" ecdsaParameters str -- remove 0x04 prefix from PubKey String

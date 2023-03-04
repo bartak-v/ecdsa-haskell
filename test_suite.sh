@@ -1,5 +1,7 @@
 #!/bin/bash
 # For more info, read the comments in test.sh
+
+# TODO remake this to test all curves in curves/ dynamically
 set -e
 echo "[INFO] Testing the ECDSA-Haskell program with secp128r1, secp256k1 and secp384r1 curves."
 

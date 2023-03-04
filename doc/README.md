@@ -7,6 +7,8 @@ The project was implemented in Haskell using GHC 9.2.5.
 This program is able to parse and work with arbitrary Elliptical Curve over prime finite fields (such as SECP256K1, SECP384R1, etc.).
 It does not currently work with curves over 2 finite fields.
 
+Only y^2≡x^3+ax+b type curve currently work.
+
 ## Input format
 
 For readability purposes, the format of the input file should be as such (secp256k1 curve for example):
@@ -65,6 +67,8 @@ Public Key is saved as `0x04<PADDING>PUB_KEY_X<PADDING>CONVERTED_PUB_KEY_Y`, whi
 
 I prepared "testing suite" that runs all of the modes of the ECDSA-Haskell program for common Elliptical Curves that are located in the `curves/` directory.
 Feel free to define your own Curves (according to the valid format), or copy some from the internet. To test the program, run `./test_suite.sh`. Look into `test.sh` script to see what is being tested. (TODO víc se rozepsat) TODO přidat nestandardní Curves.
+
+# TODO dopsat, že mi to funguje i s mixed hashema
 
 ### References
 

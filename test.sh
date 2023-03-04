@@ -27,7 +27,7 @@ set -e
 #   private key.
 # [SIGNATURE VERIFICATION]
 # The ECDSA program is then called again with EC Parameters + Signature 
-# and tests, whether or not the signature is correct.
+#   and tests, whether or not the signature is correct.
 
 CURVE_DEFINITION=$1
 HASH_LENGTH=$2
@@ -43,7 +43,7 @@ echo "[SUCCESS] Key generation successful."
 # Generate random message hash.
 case $HASH_LENGTH in
   "128" | "32B")
-    MD=" -md5 " 
+    MD=" -md5 "
     ;;
   "256" | "64B")
     MD=" -sha256 "
@@ -61,7 +61,7 @@ case $HASH_LENGTH in
 esac
 
 echo "[INFO] Testing the ECDSA-Haskell program for digital signature mode."
-echo "[INFO] Generating random ${HASH_LENGTH} bit long Hash for signing."
+echo "[INFO] Generating random ${HASH_LENGTH} long Hash for signing."
 printf "\nHash: 0x" >> tmp/key_mode_output.txt
 MESSAGE=$(tr -dc '[:print:]' </dev/urandom | head -c 10) # Get 10 random ascii characters
 HASH=$(echo $MESSAGE | openssl dgst $MD | awk '{print $2}') # Create HASH_LENGTH long hash.
@@ -69,15 +69,17 @@ printf $HASH >> tmp/key_mode_output.txt
 touch tmp/sign_mode_output.txt
 ./flp22-fun -s tmp/key_mode_output.txt > tmp/sign_mode_output.txt
 echo "[SUCCESS] Digital Signing successful."
+cat tmp/key_mode_output.txt >> tmp/sign_mode_output.txt
 
 echo "[INFO] Testing the ECDSA-Haskell for signature verification."
 RESULT=$(./flp22-fun -v tmp/sign_mode_output.txt)
-if [[ $RESULT = "True" ]]
-then 
-  echo "[SUCCESS] Signature verification (NOT IMPLEMENTED YET) successful."
+
+if [[ ${RESULT} = "True" ]]
+then
+  echo "[SUCCESS] Signature verification successful."
   RC=0
 else
-  echo "[ERROR] Signature verification has failed."
+  echo -e "\e[1;31m[ERROR] Signature verification has failed.\e[0m"
   RC=1
 fi
 # Delete the temporary directory
