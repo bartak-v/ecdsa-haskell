@@ -7,11 +7,13 @@
 XLOGINXX=xbarta47
 BIN=flp22-fun
 
+.PHONY: test
+
 ecdsa: 
 	ghc -o $(BIN) -Wall -no-keep-hi-files -no-keep-o-files src/*
 
 test:
-	echo "test"
+	./test_suite.sh
 
 pack:
-	zip flp-fun-$(XLOGINXX).zip Makefile LICENSE src/* test/* doc/*
+	zip flp-fun-$(XLOGINXX).zip Makefile LICENSE src/* test/* doc/* curves/* ./test.sh ./test_suite.sh

@@ -31,9 +31,13 @@ set -e
 
 CURVE_DEFINITION=$1
 HASH_LENGTH=$2
-echo "[INFO] Compiling the ECDSA-Haskell program."
-make 1>/dev/null
-echo "[SUCCESS] Compilation successful."
+
+if ! [ -e "flp22-fun" ]; then
+    echo "[INFO] Compiling the ECDSA-Haskell program."
+    make 1>/dev/null
+    echo "[SUCCESS] Compilation successful."
+fi
+
 mkdir -p tmp
 touch tmp/key_mode_output.txt
 echo "[INFO] Testing the ECDSA-Haskell program for parsing and key generation modes."
@@ -76,7 +80,7 @@ RESULT=$(./flp22-fun -v tmp/sign_mode_output.txt)
 
 if [[ ${RESULT} = "True" ]]
 then
-  echo "[SUCCESS] Signature verification successful."
+  echo -e "\n\e[1;32m[SUCCESS] Signature verification successful.\e[0m"
   RC=0
 else
   echo -e "\e[1;31m[ERROR] Signature verification has failed.\e[0m"
