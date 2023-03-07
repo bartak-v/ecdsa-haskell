@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
-#  Description : Testing suite for ECDSA implementation in Haskell.
+#  Description : Testing script for ECDSA implementation in Haskell.
 #  Author:     : Bc. Vít Barták (xbarta47)
-#  Maintainer  : xbarta47@fit.vutbr.cz
 #  Year        : 2023
 
 # --- You must have standard Ubuntu packages installed, such as OpenSSL. ---
@@ -41,10 +40,10 @@ fi
 mkdir -p tmp
 touch tmp/key_mode_output.txt
 echo "[INFO] Testing the ECDSA-Haskell program for parsing and key generation modes."
-./flp22-fun -i $1 | ./flp22-fun -k > tmp/key_mode_output.txt
+./flp22-fun -i $1 | ./flp22-fun -k > tmp/key_mode_output.txt # Read and Parse the curve parameters and pipe it to key generator mode.
 echo "[SUCCESS] Key generation successful."
 
-# Generate random message hash.
+# Generate random message hash with specified length.
 case $HASH_LENGTH in
   "128" | "32B")
     MD=" -md5 "
@@ -66,17 +65,18 @@ esac
 
 echo "[INFO] Testing the ECDSA-Haskell program for digital signature mode."
 echo "[INFO] Generating random ${HASH_LENGTH} long Hash for signing."
-printf "\nHash: 0x" >> tmp/key_mode_output.txt
-MESSAGE=$(tr -dc '[:print:]' </dev/urandom | head -c 10) # Get 10 random ascii characters
+printf "\nHash: 0x" >> tmp/key_mode_output.txt              # Add Hash: 0x prefix to the -k mode output
+MESSAGE=$(tr -dc '[:print:]' </dev/urandom | head -c 10)    # Get 10 random ascii characters
 HASH=$(echo $MESSAGE | openssl dgst $MD | awk '{print $2}') # Create HASH_LENGTH long hash.
-printf $HASH >> tmp/key_mode_output.txt
-touch tmp/sign_mode_output.txt
-./flp22-fun -s tmp/key_mode_output.txt > tmp/sign_mode_output.txt
+printf $HASH >> tmp/key_mode_output.txt                     # Concat the random hash to the -k mode output
+touch tmp/sign_mode_output.txt                              # Create -s mode output
+
+./flp22-fun -s tmp/key_mode_output.txt > tmp/sign_mode_output.txt # Calculate the signature from -k mode output 
 echo "[SUCCESS] Digital Signing successful."
-cat tmp/key_mode_output.txt >> tmp/sign_mode_output.txt
+cat tmp/key_mode_output.txt >> tmp/sign_mode_output.txt           # Concat the -k mode output and -s mode output to be verified next.
 
 echo "[INFO] Testing the ECDSA-Haskell for signature verification."
-RESULT=$(./flp22-fun -v tmp/sign_mode_output.txt)
+RESULT=$(./flp22-fun -v tmp/sign_mode_output.txt)                 # Verify the outputs of the previous modes.
 
 if [[ ${RESULT} = "True" ]]
 then

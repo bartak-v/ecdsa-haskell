@@ -6,8 +6,8 @@
   Maintainer  : xbarta47@fit.vutbr.cz
   Year        : 2023
 
-This is the ECDSA module in which the Data representation for the Elliptic Curve 
-and the core computing functions are specified, aswell as helper functions. 
+This is the ECDSA module in which the core arithmetic functions over curves
+are. And ECDSA modes are dispatched from here, aswell as helper functions. 
 
 The module is fully utilizing the "infinite" Integer type for representing parts
 of the ECDSA standard and making calculations.
@@ -50,7 +50,6 @@ keyGenerator curve@ECTypes.Curve {..} = do
           { d = randomNumber
           , q = doubleAndAdd curve randomNumber generatorPoint -- Calculate the keypair
           }
-  print $ keyPair
   putStr $ ECParser.catCurveKey curve keyPair
 
 -- Generates ECDSA signature of Hash over Curve with PrivateKey.
@@ -99,17 +98,17 @@ verifySignature curve@ECTypes.Curve {..} (xpub, ypub) ECTypes.Signature {..} has
               curve
               (doubleAndAdd curve u1 (x, y))
               (doubleAndAdd curve u2 (xpub, ypub)) -- R = (xR, yR) = u1*G + u2*Q
-      if (xr, yr) == (0, 0) -- check if R == Infinity Point # TODO actually implement InfinityPoint
+      if (xr, yr) == (0, 0) -- check if R == Infinity Point
         then do
-          putStr "False"
+          putStrLn "False"
         else do
           if r `mod` n == xr `mod` n -- Check the signature
             then do
-              putStr "True" -- TODO remake this and test.sh to accept \n
+              putStrLn "True"
             else do
-              putStr "False"
+              putStrLn "False"
     else do
-      putStr "False"
+      putStrLn "False"
 
 {-
  Truncate Hash to the same length as "n".
@@ -153,15 +152,14 @@ isPointOnCurve :: ECTypes.Curve -> ECTypes.Point -> Bool
 isPointOnCurve ECTypes.Curve {a = a, b = b, p = prime} (x, y) =
   (y * y - x * x * x - a * x - b) `mod` prime == 0
 
-
 -- Add points over a curve.
 addPoints :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point -> ECTypes.Point
 addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
-  | x1 == 0 && y1 == 0 = (x2,y2)
-  | x2 == 0 && y2 == 0 = (x1,y1)
-  | x1 == x2 && y1 /= y2 = (0,0) -- error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
-  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime lambdaDouble -- Case for point1 == point2
-  | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime lambdaAdd -- Case for point1 /= point2
+  | (x1, y1) == (0, 0) = (x2, y2) -- O + P = P 
+  | (x2, y2) == (0, 0) = (x1, y1) -- P + O = P
+  | x1 == x2 && y1 /= y2 = (0, 0) -- (x1,y1) + (x1,-y1) = O
+  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime lambdaDouble -- Case for point1 == point2 -- double point
+  | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime lambdaAdd -- Case for point1 /= point2 -- add points
   where
     lambdaDouble = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime -- Lambda when doubling a point
     lambdaAdd = (y1 - y2) * modularInverse (x1 - x2) prime -- Lambda when adding points
@@ -169,17 +167,16 @@ addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
 -- Returns the newly calculated point.
 calculatePointAdd ::
      ECTypes.Point -> ECTypes.Point -> Integer -> Integer -> ECTypes.Point
-calculatePointAdd (x1, y1) (x2, _) prime lambda =
-  (x3, y3)
+calculatePointAdd (x1, y1) (x2, _) prime lambda = (x3, y3)
   where
-    x3 = (lambda * lambda - x1 - x2 ) `mod` prime
+    x3 = (lambda * lambda - x1 - x2) `mod` prime
     y3 = (lambda * (x1 - x3) - y1) `mod` prime
 
 -- Double and add recursive algorithm for scalar point multiplication.
 -- Returns scalar*Point (over Curve).
 doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
 doubleAndAdd curve@ECTypes.Curve {..} scalar point
-  | scalar == 0 = (0, 0) -- (0,0) represents the Infinity Point
+  | scalar == 0 = (0, 0) -- (0,0) represents the Infinity Point (O)
   | scalar == 1 = point
   | odd scalar =
     addPoints curve point $ doubleAndAdd curve (scalar - 1) point -- addition when scalar is odd

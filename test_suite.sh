@@ -1,5 +1,10 @@
 #!/bin/bash
+#  Description : Testing suite for ECDSA implementation in Haskell.
+#  Author:     : Bc. Vít Barták (xbarta47)
+#  Maintainer  : xbarta47@fit.vutbr.cz
+#  Year        : 2023
 # For more info, read the comments in test.sh
+
 
 set -e
 echo "[INFO] Testing the ECDSA-Haskell program with $(ls curves/ | tr '\n' ' ') curves."
@@ -10,7 +15,7 @@ sleep 2
 
 echo -e "\n------ [TESTING] secp192r1 ------"
 sleep 2
-./test.sh curves/secp192r1 128 # todo test, that the hash lenght can be mismatched with the key length (it probably can i guess)...
+./test.sh curves/secp192r1 128
 
 echo -e "\n------ [TESTING] secp256k1 ------"
 sleep 2

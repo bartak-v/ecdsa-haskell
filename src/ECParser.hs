@@ -46,7 +46,6 @@ integerFromString str
   | all isDigit str || "0x" `isPrefixOf` str = read str
   | otherwise = read $ "0x" ++ str
 
--- TODO: maybe handle the [] -> case better - do validation of the whole loaded input anyways
 -- Extracts specified ECDSA Curve related parameter from the loaded string. (p: etc.)
 extractCurveParameter :: String -> [String] -> String -> String
 extractCurveParameter wantedParameter keywords rawInputString =

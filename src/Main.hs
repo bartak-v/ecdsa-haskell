@@ -46,9 +46,8 @@ help =
 main :: IO ()
 main = do
   args <- getArgs
-  case args
+  case args of
     -- One flag argument and STDIN
-        of
     [arg] -> do
       content <- getContents
       processAction arg content
