@@ -26,3 +26,4 @@ cabal.project.local~
 flp22-fun
 debug.hs
 tmp/
+ff.sh

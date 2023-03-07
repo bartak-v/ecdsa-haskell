@@ -64,13 +64,6 @@ instance Show Curve where
 -- A 2 dimensional point on the curve.
 type Point = (Integer, Integer)
 
--- Infinity point representation
-infinityPoint :: Point
-infinityPoint = (0, 0)
-
--- alternative, TODO test
-data InfinityPoint =
-  InfinityPoint
 
 -- The signing private key 'd'
 type PrivateKey = Integer
@@ -99,7 +92,7 @@ instance Show KeyPair where
     padPointCoordinate keyLen ypub ++ "\n" ++ "}\n"
     where
       pk = integerToAlmostHexString d
-      (xpub, ypub) = convertPoint q
+      (xpub, ypub) = q
       keyLen = length pk
 
 -- The hash of the message to be signed

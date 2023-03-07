@@ -50,6 +50,7 @@ keyGenerator curve@ECTypes.Curve {..} = do
           { d = randomNumber
           , q = doubleAndAdd curve randomNumber generatorPoint -- Calculate the keypair
           }
+  print $ keyPair
   putStr $ ECParser.catCurveKey curve keyPair
 
 -- Generates ECDSA signature of Hash over Curve with PrivateKey.
@@ -93,22 +94,16 @@ verifySignature curve@ECTypes.Curve {..} (xpub, ypub) ECTypes.Signature {..} has
     then do
       let u1 = (truncHash * modularInverse s n) `mod` n
           u2 = (r * modularInverse s n) `mod` n
-          (xpubn, ypubn) = (xpub, -ypub) -- The negative PubKey point, because the public key is saved as a positive integer only - have to calculate twice.
           (xr, yr) =
             addPoints
               curve
               (doubleAndAdd curve u1 (x, y))
               (doubleAndAdd curve u2 (xpub, ypub)) -- R = (xR, yR) = u1*G + u2*Q
-          (xrn, yrn) =
-            addPoints
-              curve
-              (doubleAndAdd curve u1 (x, y))
-              (doubleAndAdd curve u2 (xpubn, ypubn)) -- calculate R twice, because of format of pubkey
-      if (xr, yr) == (0, 0) || (xrn, yrn) == (0, 0) -- check if R == Infinity Point # TODO actually implement InfinityPoint
+      if (xr, yr) == (0, 0) -- check if R == Infinity Point # TODO actually implement InfinityPoint
         then do
           putStr "False"
         else do
-          if (r `mod` n == xr `mod` n) || (r `mod` n == xrn `mod` n) -- Check the signature for both variants of PubKey
+          if r `mod` n == xr `mod` n -- Check the signature
             then do
               putStr "True" -- TODO remake this and test.sh to accept \n
             else do
@@ -159,45 +154,33 @@ isPointOnCurve ECTypes.Curve {a = a, b = b, p = prime} (x, y) =
   (y * y - x * x * x - a * x - b) `mod` prime == 0
 
 
--- Double an EC Point
--- TODO jaktože doublePoint a addPoint dávaj na stejný bod jiný Y? -ono je asi negated
-doublePoint :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point
-doublePoint ECTypes.Curve {a = a, p = prime} (xp, yp) = (xr, yr)
-  where
-    lambda = ((3 * xp * xp + a) * modularInverse (2 * yp) prime) `mod` prime
-    xr = (lambda * lambda - 2 * xp) `mod` prime
-    yr = (lambda * (xp - xr) - yp) `mod` prime
-
 -- Add points over a curve.
--- TODO pořádně si promyslet https://crypto.stackexchange.com/questions/66288/what-is-the-point-at-infinity-on-secp256k1-and-how-to-calculate-it
--- a zjistit, jestli doubling bodu je to samý jako jeho přidání samo k sobě
--- taky zjistit, jak je to s tím bodem v nekonečnu (tady pro něj házim error)
 addPoints :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point -> ECTypes.Point
 addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
-  | x1 == x2 && y1 /= y2 =
-    error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
+  | x1 == 0 && y1 == 0 = (x2,y2)
+  | x2 == 0 && y2 == 0 = (x1,y1)
+  | x1 == x2 && y1 /= y2 = (0,0) -- error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
   | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime lambdaDouble -- Case for point1 == point2
   | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime lambdaAdd -- Case for point1 /= point2
   where
     lambdaDouble = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime -- Lambda when doubling a point
-    lambdaAdd = (y1 - y2) * modularInverse (x1 - x2) prime -- Lambda when adding
+    lambdaAdd = (y1 - y2) * modularInverse (x1 - x2) prime -- Lambda when adding points
 
 -- Returns the newly calculated point.
 calculatePointAdd ::
      ECTypes.Point -> ECTypes.Point -> Integer -> Integer -> ECTypes.Point
 calculatePointAdd (x1, y1) (x2, _) prime lambda =
-  (x3 `mod` prime, -y3 `mod` prime)
+  (x3, y3)
   where
-    x3 = lambda * lambda - x1 - x2
-    y3 = y1 + lambda * (x3 - x1) -- TODO Tady je asi chyba, tady by mělo bejt -y1 podle standardu
+    x3 = (lambda * lambda - x1 - x2 ) `mod` prime
+    y3 = (lambda * (x1 - x3) - y1) `mod` prime
 
--- TODO check that doublePoint works correctly...
 -- Double and add recursive algorithm for scalar point multiplication.
--- Returns scalar*Point (over Curve)
+-- Returns scalar*Point (over Curve).
 doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
 doubleAndAdd curve@ECTypes.Curve {..} scalar point
-  | scalar == 0 = (0, 0) -- TODO tohle se musí přepsat, nebo se to někde vejš zachytit, add infinity point
+  | scalar == 0 = (0, 0) -- (0,0) represents the Infinity Point
   | scalar == 1 = point
-  | scalar `mod` 2 == 1 =
+  | odd scalar =
     addPoints curve point $ doubleAndAdd curve (scalar - 1) point -- addition when scalar is odd
-  | otherwise = doubleAndAdd curve (div scalar 2) $ addPoints curve point point -- doublePoint curve point -- doubling when scalar is even
+  | otherwise = doubleAndAdd curve (div scalar 2) $ addPoints curve point point -- doubling when scalar is even
