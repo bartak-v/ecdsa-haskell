@@ -158,11 +158,6 @@ isPointOnCurve :: ECTypes.Curve -> ECTypes.Point -> Bool
 isPointOnCurve ECTypes.Curve {a = a, b = b, p = prime} (x, y) =
   (y * y - x * x * x - a * x - b) `mod` prime == 0
 
--- Returns negation of a point over Curve.
-negatePoint :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point
-negatePoint ECTypes.Curve {p = prime} (x1, y1)
-  | x1 == 0 && y1 == 0 = error "Can not negate (0,0)."
-  | otherwise = (x1, -y1 `mod` prime)
 
 -- Double an EC Point
 -- TODO jaktože doublePoint a addPoint dávaj na stejný bod jiný Y? -ono je asi negated
@@ -181,20 +176,20 @@ addPoints :: ECTypes.Curve -> ECTypes.Point -> ECTypes.Point -> ECTypes.Point
 addPoints ECTypes.Curve {a = a, p = prime} (x1, y1) (x2, y2)
   | x1 == x2 && y1 /= y2 =
     error " Error: Point in infinity not implemented. point + (-point)" -- TODO: použít nějaký datový typ pro reprezentaci tohohle...
-  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime m1 -- Case for point1 == point2
-  | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime m2 -- Case for point1 /= point2
+  | x1 == x2 = calculatePointAdd (x1, y1) (x2, y2) prime lambdaDouble -- Case for point1 == point2
+  | otherwise = calculatePointAdd (x1, y1) (x2, y2) prime lambdaAdd -- Case for point1 /= point2
   where
-    m1 = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime
-    m2 = (y1 - y2) * modularInverse (x1 - x2) prime
+    lambdaDouble = (3 * x1 * x1 + a) * modularInverse (2 * y1) prime -- Lambda when doubling a point
+    lambdaAdd = (y1 - y2) * modularInverse (x1 - x2) prime -- Lambda when adding
 
 -- Returns the newly calculated point.
 calculatePointAdd ::
      ECTypes.Point -> ECTypes.Point -> Integer -> Integer -> ECTypes.Point
-calculatePointAdd (x1, y1) (x2, _) prime modulus =
+calculatePointAdd (x1, y1) (x2, _) prime lambda =
   (x3 `mod` prime, -y3 `mod` prime)
   where
-    x3 = modulus * modulus - x1 - x2
-    y3 = y1 + modulus * (x3 - x1)
+    x3 = lambda * lambda - x1 - x2
+    y3 = y1 + lambda * (x3 - x1) -- TODO Tady je asi chyba, tady by mělo bejt -y1 podle standardu
 
 -- TODO check that doublePoint works correctly...
 -- Double and add recursive algorithm for scalar point multiplication.
@@ -205,4 +200,4 @@ doubleAndAdd curve@ECTypes.Curve {..} scalar point
   | scalar == 1 = point
   | scalar `mod` 2 == 1 =
     addPoints curve point $ doubleAndAdd curve (scalar - 1) point -- addition when scalar is odd
-  | otherwise = doubleAndAdd curve (div scalar 2) $ doublePoint curve point -- doubling when scalar is even
+  | otherwise = doubleAndAdd curve (div scalar 2) $ addPoints curve point point -- doublePoint curve point -- doubling when scalar is even
