@@ -14,7 +14,7 @@ Program byl testován na některých běžně používaných křivkách typu y^2
 
 ## Parsování
 
-Program dokáže parsovat i "špatně" naformátovaný a zašuměný vstupní soubor (např. 'test/Information_test_misformatted.in'). Vstupní soubor ovšem musí obsahovat všechny klíčová slova (parametry) pro daný přepínač. Parser bere vše, co není parametr Eliptické Křivky (["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]) jako komentáře a ignoruje takové řádky. Díky tomu mohou být parametry zadány napřeskáčku a prokládány komentáři. Parametry na vstupu taktéž nesmí být duplicitní.
+Program dokáže parsovat i "špatně" naformátovaný a zašuměný vstupní soubor (např. 'test/Information_test_misformatted.in'). Vstupní soubor ovšem musí obsahovat všechny klíčová slova (parametry) pro daný přepínač. Parser bere vše, co není parametr Eliptické Křivky (`["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]`) jako komentáře a ignoruje takové řádky. Díky tomu mohou být parametry zadány napřeskáčku a prokládány komentáři. Parametry na vstupu taktéž nesmí být duplicitní.
 
 Díky tomu lze i vstupní formát zjedodušit (např. soubor 'curves/secp256k1' - stejně to platí i pro ostatní přepínače).
 
