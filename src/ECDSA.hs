@@ -1,4 +1,4 @@
-{-|
+{-
   Module      : ECDSA
   Description : The ECDSA implementation in Haskell.
   Author:     : Bc. Vít Barták (xbarta47)
@@ -40,9 +40,11 @@ processMode mode content =
         (ECParser.parseParam "r:" content)
         (ECParser.parseParam "s:" content)
 
--- Generates ECDSA keys, private key "d" is random (max) nlen bit value.
--- "nlen" is based on the length of "n" prime number order of G in the curve.
--- public key Q is Point on the Curve computed as d*G, where G is the generator point.
+{-
+  Generates ECDSA keys, private key "d" is random (max) nlen bit value.
+  "nlen" is based on the length of "n" prime number order of G in the curve.
+  public key Q is Point on the Curve computed as d*G, where G is the generator point.
+-}
 keyGenerator :: ECTypes.Curve -> IO ()
 keyGenerator curve@ECTypes.Curve {..} = do
   randomNumber <- randomRIO (1, n - 1) -- generate private key in the range (1, n-1)
@@ -54,9 +56,11 @@ keyGenerator curve@ECTypes.Curve {..} = do
           }
   putStr $ ECParser.catCurveKey curve keyPair
 
--- Generates ECDSA signature of Hash over Curve with PrivateKey.
--- This function runs recursively until r and s are non-zero 
--- (there's a little probable chance that they are zero).
+{- 
+  Generates ECDSA signature of Hash over Curve with PrivateKey.
+  This function runs recursively until r and s are non-zero 
+  (there's a little probable chance that they are zero).
+-}
 signatureGenerator ::
      ECTypes.Curve -> ECTypes.PrivateKey -> ECTypes.Hash -> IO ()
 signatureGenerator curve@ECTypes.Curve {..} privateKey hash = do
@@ -126,6 +130,7 @@ truncateHash ECTypes.Curve {..} hash =
     nStr = ECTypes.integerToAlmostHexString n
 
 -- {Point arithmetics operations} --
+
 -- Processes EUA for two integers, returns greatest common denominator and Bezout coefficients.
 extendedEuclideanAlgorithm :: Integer -> Integer -> (Integer, Integer, Integer)
 extendedEuclideanAlgorithm a b =
@@ -172,8 +177,10 @@ calculatePointAdd (x1, y1) (x2, _) prime lambda = (x3, y3)
     x3 = (lambda * lambda - x1 - x2) `mod` prime
     y3 = (lambda * (x1 - x3) - y1) `mod` prime
 
--- Double and add recursive algorithm for scalar point multiplication.
--- Returns scalar*Point (over Curve).
+{-
+  Double and add recursive algorithm for scalar point multiplication.
+  Returns scalar*Point (over Curve).
+-}
 scalarMult :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
 scalarMult curve@ECTypes.Curve {..} scalar point
   | scalar == 0 = (0, 0)

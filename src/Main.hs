@@ -1,4 +1,4 @@
-{-|
+{-
   Module      : Main
   Description : Main module of the ECDSA Haskell program.
   Author:     : Bc. Vít Barták (xbarta47)
@@ -48,11 +48,11 @@ main :: IO ()
 main = do
   args <- getArgs
   case args of
-    -- One flag argument and STDIN
+    -- One flag argument and STDIN.
     [arg] -> do
       content <- getContents
       processAction arg content
-    -- One flag argument and input text file
+    -- One flag argument and input text file.
     [arg, file] -> do
       content <- readFile file
       processAction arg content

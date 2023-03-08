@@ -5,7 +5,7 @@ ECDSA implemented in Haskell - Functional project for the FLP course at BUT FIT 
 The project was implemented in Haskell using GHC 9.2.5.
 
 This program is able to parse and work with arbitrary Elliptical Curve over prime finite fields (such as SECP256K1, SECP384R1, etc.).
-It does not currently work with curves over 2 finite fields.
+It does not currently work with curves over 2-finite fields.
 
 Only y^2≡x^3+ax+b type curve currently work.
 

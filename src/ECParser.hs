@@ -1,4 +1,4 @@
-{-|
+{-
   Module      : ECParser
   Description : Parser functions for Elliptic Curve DSA.
   Author:     : Bc. Vít Barták (xbarta47)
@@ -37,16 +37,16 @@ catCurveKey :: ECTypes.Curve -> ECTypes.KeyPair -> String
 catCurveKey curve keyPair = show curve ++ show keyPair
 
 {-
-This function takes String representing decimal or hex 
- number such as "1234", "0xFFAB" or "FFAB" 
- and converts it to Integer to be further used.
+  This function takes String representing decimal or hex 
+  number such as "1234", "0xFFAB" or "FFAB" 
+  and converts it to Integer to be further used.
 -}
 integerFromString :: String -> Integer
 integerFromString str
   | all isDigit str || "0x" `isPrefixOf` str = read str
   | otherwise = read $ "0x" ++ str
 
--- Extracts specified ECDSA Curve related parameter from the loaded string. (p: etc.)
+-- Extracts specified ECDSA Curve related parameter from the loaded string. (p: etc.).
 extractCurveParameter :: String -> [String] -> String -> String
 extractCurveParameter wantedParameter keywords rawInputString =
   let filteredLines =
@@ -55,8 +55,10 @@ extractCurveParameter wantedParameter keywords rawInputString =
         [] -> " "
         (line:_) -> getTrimmmedParameterValue keywords line
 
--- Returns trimmed parameter - the value of a parameter ("p: 0xFFFFFFFFFF" -> "0xFFFFFFFFFF") 
--- from a line of the input string
+{-
+   Returns trimmed parameter - the value of a parameter ("p: 0xFFFFFFFFFF" -> "0xFFFFFFFFFF") 
+   from a line of the input string.
+-}
 getTrimmmedParameterValue :: [String] -> String -> String
 getTrimmmedParameterValue parameters line =
   unwords $ filter (`notElem` parameters) $ words line

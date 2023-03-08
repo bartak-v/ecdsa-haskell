@@ -1,4 +1,4 @@
-{-|
+{-
   Module      : ECDSA
   Description : The ECDSA implementation in Haskell.
   Author:     : Bc. Vít Barták (xbarta47)
@@ -17,14 +17,14 @@ module ECTypes where
 import Data.Char (toUpper)
 import Numeric (showHex)
 
--- Mode of operation of the ECDSA
+-- Mode of operation of the ECDSA.
 data Mode
   = Information
   | GenerateKeys
   | Sign
   | Verify
 
--- The Elliptical Curve representation
+-- The Elliptical Curve representation.
 data Curve =
   Curve
     { p :: Integer
@@ -119,8 +119,10 @@ integerToHexString num = "0x" ++ integerToAlmostHexString num
 integerToAlmostHexString :: Integer -> String
 integerToAlmostHexString num = map toUpper (showHex num "")
 
--- Pad hex string with leading zeros to align with n Bytes
--- and return this as a hex string.
+{-
+   Pad hex string with leading zeros to align with n Bytes
+   and return this as a hex string.
+-}
 padPointCoordinate :: Int -> Integer -> String
 padPointCoordinate n integer =
   if length str >= n
