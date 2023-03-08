@@ -14,7 +14,7 @@ import Data.Char (isDigit)
 import Data.List (isInfixOf, isPrefixOf)
 import qualified ECTypes
 
--- Prefixes of the ECDSA parameters to be extracted out of the input file / string.
+-- Prefixes of the ECDSA parameters / keywords to be extracted out of the input file / string.
 ecdsaParameters :: [[Char]]
 ecdsaParameters =
   ["p:", "a:", "b:", "x:", "y:", "n:", "h:", "d:", "Q:", "Hash:", "r:", "s:"]

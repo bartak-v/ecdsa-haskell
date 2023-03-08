@@ -1,16 +1,18 @@
 {-|
   Module      : ECDSA
-  Description : The ECDSA implementation in haskell.
+  Description : The ECDSA implementation in Haskell.
   Author:     : Bc. Vít Barták (xbarta47)
   License     : MIT
   Maintainer  : xbarta47@fit.vutbr.cz
   Year        : 2023
 
 This is the ECDSA module in which the core arithmetic functions over curves
-are. And ECDSA modes are dispatched from here, aswell as helper functions. 
+are implemented. 
 
-The module is fully utilizing the "infinite" Integer type for representing parts
-of the ECDSA standard and making calculations.
+ECDSA modes are dispatched from here, and helper functions are implemented. 
+
+The module is fully utilizing the "infinite" Integer type for representing and
+calculating parts of the ECDSA standard.
 -}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -38,9 +40,9 @@ processMode mode content =
         (ECParser.parseParam "r:" content)
         (ECParser.parseParam "s:" content)
 
--- Generates ECDSA keys, private key "d" is random nlen bit value.
+-- Generates ECDSA keys, private key "d" is random (max) nlen bit value.
 -- "nlen" is based on the length of "n" prime number order of G in the curve.
--- public key Q is Point on the Curve counted as d*G, where G is the generator point.
+-- public key Q is Point on the Curve computed as d*G, where G is the generator point.
 keyGenerator :: ECTypes.Curve -> IO ()
 keyGenerator curve@ECTypes.Curve {..} = do
   randomNumber <- randomRIO (1, n - 1) -- generate private key in the range (1, n-1)
@@ -48,7 +50,7 @@ keyGenerator curve@ECTypes.Curve {..} = do
       keyPair =
         ECTypes.KeyPair
           { d = randomNumber
-          , q = doubleAndAdd curve randomNumber generatorPoint -- Calculate the keypair
+          , q = scalarMult curve randomNumber generatorPoint -- Q = d*G
           }
   putStr $ ECParser.catCurveKey curve keyPair
 
@@ -58,9 +60,7 @@ keyGenerator curve@ECTypes.Curve {..} = do
 signatureGenerator ::
      ECTypes.Curve -> ECTypes.PrivateKey -> ECTypes.Hash -> IO ()
 signatureGenerator curve@ECTypes.Curve {..} privateKey hash = do
-  let truncHash =
-        ECParser.integerFromString $
-        ECTypes.integerToAlmostHexString $ truncateHash curve hash
+  let truncHash = truncateHash curve hash
   k <- randomRIO (1, n - 1)
   let (r', s') = generateSignature curve privateKey k truncHash -- generate non-null r,s
   if r' == 0 || s' == 0
@@ -76,9 +76,9 @@ generateSignature ::
   -> ECTypes.Point
 generateSignature curve@ECTypes.Curve {..} pk k hash = (r, s)
   where
-    (x1, _) = doubleAndAdd curve k (x, y) -- generate random point on Curve R=k*G
+    (x1, _) = scalarMult curve k (x, y) -- generate random point on Curve R=k*G
     r = x1 `mod` n
-    s = (modularInverse k n * (hash + r * pk)) `mod` n
+    s = (modularInverse k n * (hash + r * pk)) `mod` n -- s = k^(−1)*(e + r*d ) mod n, e = Hash
 
 -- Load the curve, public key, signature and hash from input and verify the signature. 
 verifySignature ::
@@ -88,16 +88,16 @@ verifySignature ::
   -> ECTypes.Hash
   -> IO ()
 verifySignature curve@ECTypes.Curve {..} (xpub, ypub) ECTypes.Signature {..} hash = do
-  let truncHash = truncateHash curve hash -- truncated hash to (at most) nlen length
-  if (r >= 1 && r <= (n - 1)) || (s >= 1 && s <= (n - 1)) -- check if signature is in valid range
+  let truncHash = truncateHash curve hash -- truncated hash to (at most) nlen length -> e
+  if (r >= 1 && r <= (n - 1)) || (s >= 1 && s <= (n - 1)) && isPointOnCurve curve (r,s) -- check if signature is in valid range
     then do
-      let u1 = (truncHash * modularInverse s n) `mod` n
-          u2 = (r * modularInverse s n) `mod` n
+      let u1 = (truncHash * modularInverse s n) `mod` n  -- u1 = e*s^(−1) mod n
+          u2 = (r * modularInverse s n) `mod` n          -- u2 = r*s^(−1) mod n
           (xr, yr) =
             addPoints
               curve
-              (doubleAndAdd curve u1 (x, y))
-              (doubleAndAdd curve u2 (xpub, ypub)) -- R = (xR, yR) = u1*G + u2*Q
+              (scalarMult curve u1 (x, y))
+              (scalarMult curve u2 (xpub, ypub)) -- R = (xR, yR) = u1*G + u2*Q
       if (xr, yr) == (0, 0) -- check if R == Infinity Point
         then do
           putStrLn "False"
@@ -147,7 +147,7 @@ modularInverse number modulus
   where
     (_, finalBezoutCoefA, _) = extendedEuclideanAlgorithm number modulus
 
--- Checks wheter a given point is on the Curve.
+-- Checks wheter a given point is on the Curve by solving the Curve equation.
 isPointOnCurve :: ECTypes.Curve -> ECTypes.Point -> Bool
 isPointOnCurve ECTypes.Curve {a = a, b = b, p = prime} (x, y) =
   (y * y - x * x * x - a * x - b) `mod` prime == 0
@@ -174,10 +174,10 @@ calculatePointAdd (x1, y1) (x2, _) prime lambda = (x3, y3)
 
 -- Double and add recursive algorithm for scalar point multiplication.
 -- Returns scalar*Point (over Curve).
-doubleAndAdd :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
-doubleAndAdd curve@ECTypes.Curve {..} scalar point
-  | scalar == 0 = (0, 0) -- (0,0) represents the Infinity Point (O)
+scalarMult :: ECTypes.Curve -> Integer -> ECTypes.Point -> ECTypes.Point
+scalarMult curve@ECTypes.Curve {..} scalar point
+  | scalar == 0 = (0, 0)
   | scalar == 1 = point
   | odd scalar =
-    addPoints curve point $ doubleAndAdd curve (scalar - 1) point -- addition when scalar is odd
-  | otherwise = doubleAndAdd curve (div scalar 2) $ addPoints curve point point -- doubling when scalar is even
+    addPoints curve point $ scalarMult curve (scalar - 1) point               -- addition when scalar is odd
+  | otherwise = scalarMult curve (div scalar 2) $ addPoints curve point point -- doubling when scalar is even
