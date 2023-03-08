@@ -16,4 +16,4 @@ test:
 	./test_suite.sh
 
 pack:
-	zip flp-fun-$(XLOGINXX).zip Makefile README.md src/* test/* doc/* curves/* ./test.sh ./test_suite.sh
+	zip flp-fun-$(XLOGINXX).zip Makefile README.md src/* test/* curves/* ./test.sh ./test_suite.sh
